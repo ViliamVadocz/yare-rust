@@ -14,6 +14,28 @@ extern "C" {
     pub fn count() -> usize;
 
     /// Get the current cost to produce a new spirit.
+    ///
+    /// Each tick, if the energy exceeds the current spirit cost, a spirit will
+    /// be generated and that much energy will be used up. The cost of a new
+    /// spirit increases with the number of your spirits in the game.
+    ///
+    /// ### Circles
+    /// ```
+    /// | threshold | energy |
+    /// |-----------|--------|
+    /// | 100       | 50     |
+    /// | 200       | 100    |
+    /// | 300       | 200    |
+    /// | ---       | 400    |
+    /// ```
+    ///
+    /// ### Squares
+    /// ```
+    /// | threshold | energy |
+    /// |-----------|--------|
+    /// | 10        | 400    |
+    /// | ---       | 800    |
+    /// ```
     #[link_name = "currentSpiritCost"]
     pub fn current_spirit_cost(index: usize) -> u32;
 
