@@ -7,4 +7,4 @@ pub mod spirit;
 pub mod star;
 
 // #[no_mangle]
-// pub extern "C" fn tick() {}
+// pub extern "C" fn tick(tick: u32) {}

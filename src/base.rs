@@ -4,6 +4,16 @@ use crate::position::Position;
 extern "C" {
     pub fn count() -> usize;
 
+    #[link_name = "currentSpiritCost"]
+    pub fn current_spirit_cost(index: usize) -> u32;
+
+    #[link_name = "energyCapacity"]
+    pub fn energy_capacity(index: usize) -> u32;
+
+    pub fn energy(index: usize) -> u32;
+
+    pub fn hp(index: usize) -> u32;
+
     #[link_name = "positionX"]
     pub fn position_x(index: usize) -> f32;
 
@@ -12,12 +22,5 @@ extern "C" {
 
     pub fn position(index: usize) -> Position;
 
-    pub fn size(index: usize) -> f32;
-
-    #[link_name = "energyCapacity"]
-    pub fn energy_capacity(index: usize) -> f32;
-
-    pub fn energy(index: usize) -> f32;
-
-    pub fn hp(index: usize) -> f32;
+    pub fn size(index: usize) -> u32;
 }
