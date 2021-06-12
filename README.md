@@ -5,7 +5,7 @@ A library for making bots for [yare](https://yare.io) with Rust.
 ## How it works
 
 You make a Rust library and compile to [wasm](https://webassembly.org/). Then
-you use the [yare2wasm](https://github.com/L0laapk3/yare.io-wasm) script to
+you use the [wasm2yareio](https://github.com/L0laapk3/yare.io-wasm) script to
 generate a JavaScript yare bot. The result can be copied into the game.
 
 ## Setup
@@ -53,7 +53,7 @@ that takes no arguments. This will be called every tick.
 
 ```rust
 #[no_mangle]
-pub extern "C" fn tick() {
+pub extern "C" fn tick(_tick: u32) {
     let pos = unsafe { base::position(0) };
     for index in 0..unsafe { spirit::count() } {
         if unsafe { spirit::is_friendly(index) } {
