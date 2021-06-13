@@ -54,10 +54,68 @@ that takes no arguments. This will be called every tick.
 ```rust
 #[no_mangle]
 pub extern "C" fn tick(_tick: u32) {
-    let pos = unsafe { base::position(0) };
-    for index in 0..unsafe { spirit::count() } {
-        if unsafe { spirit::is_friendly(index) } {
-            unsafe { spirit::goto(index, pos.x, pos.y) };
+    unsafe {
+        let (x, y) = unsafe { (base::position_x(0), base::position_y(0)) };
+        for index in 0..spirit::count() {
+            if spirit::is_friendly(index) && spirit::hp(index) > 0 {
+                spirit::goto(index, x, y);
+            }
+        }
+    }
+}
+```
+
+You should make safe wrappers for these function so that you don't have to have `unsafe` blocks in your bot code.
+For example, you could do something like this:
+
+```rust
+use std::ffi::CString;
+use yare::spirit;
+
+/// Your own Spirit struct with all the information you want.
+struct Spirit {
+    index: usize,
+    alive: bool,
+    friendly: bool,
+}
+
+impl Spirit {
+    /// Safe wrapper for moving a spirit.
+    fn goto(&self, x: f32, y: f32) {
+        unsafe { spirit::goto(self.index, x, y) }
+    }
+
+    /// Safe wrapper for using shout.
+    fn shout(&self, string: &str) {
+        let c_string = CString::new(string).unwrap();
+        unsafe { spirit::shout(self.index, c_string.as_ptr()) }
+    }
+}
+
+/// Parse all spirits into your own Spirit structs.
+fn get_spirits() -> Vec<Spirit> {
+    unsafe {
+        let count = spirit::count();
+        let mut spirits = Vec::with_capacity(count);
+        for index in 0..count {
+            spirits.push(Spirit {
+                index,
+                alive: spirit::hp(index) > 0,
+                friendly: spirit::is_friendly(index),
+            });
+        }
+        spirits
+    }
+}
+
+// No unsafe block needed here!
+#[no_mangle]
+pub extern "C" fn tick(_tick: u32) {
+    let all_spirits = get_spirits();
+    for spirit in all_spirits {
+        if spirit.friendly && spirit.alive {
+            spirit.goto(123., 456.);
+            spirit.shout("Hello, world!");
         }
     }
 }
@@ -68,11 +126,11 @@ pub extern "C" fn tick(_tick: u32) {
 To build your yare bot, you first need to compile to wasm. Use this:
 
 ```bash
-cargo rustc --target wasm32-unknown-unknown --release -- -C target-feature=+multivalue
+cargo rustc --target wasm32-unknown-unknown --release
 ```
 
-Then you want to pass it through wasm2yare
+Then you want to pass it through wasm2yareio.
 
 ```bash
-node wasm2yareio target/wasm32-unknown-unknown/release/yarebot.wasm
+node wasm2yareio target/wasm32-unknown-unknown/release/my-yare-bot.wasm
 ```
