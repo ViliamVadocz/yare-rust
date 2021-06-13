@@ -1,5 +1,9 @@
 use crate::position::Position;
 
+/// If an enemy spirit is within this radius to a base,
+/// it will not produce new spirits.
+pub const DISRUPTION_RADIUS: f32 = 400.;
+
 #[link(wasm_import_module = "bases")]
 extern "C" {
     /// Get the number of bases in the game.

@@ -2,6 +2,11 @@ use std::os::raw::c_char;
 
 use crate::position::Position;
 
+pub const ENERGIZE_RANGE: f32 = 200.;
+pub const MOVEMENT_SPEED: f32 = 20.;
+pub const JUMP_DISTANCE: f32 = 300.;
+pub const MERGE_DISTANCE: f32 = 12.;
+
 #[link(wasm_import_module = "spirits")]
 extern "C" {
     /// Get the number of spirits in the game.
@@ -61,7 +66,7 @@ extern "C" {
     pub fn jump(index: usize, x: f32, y: f32);
 
     /// Merges the spirit into another friendly spirit. Target needs to be
-    /// within 10 units in both x and y.
+    /// within 12 units in both x and y.
     ///
     /// ### Disclaimer
     /// Only available for circles.
