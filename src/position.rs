@@ -9,6 +9,8 @@
 /// ```
 #[repr(C)]
 pub struct Position {
+    /// Horizontal coordinate.
     pub x: f32,
+    /// Vertical coordinate.
     pub y: f32,
 }

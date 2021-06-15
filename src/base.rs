@@ -3,6 +3,10 @@ use crate::position::Position;
 /// If an enemy spirit is within this radius to a base,
 /// it will not produce new spirits.
 pub const DISRUPTION_RADIUS: f32 = 400.;
+/// (Threshold, energy cost) pairs for circle spirit production.
+pub const SPIRIT_COSTS_CIRCLE: &[(u32, u32)] = &[(0, 50), (100, 100), (200, 200), (300, 400)];
+/// (Threshold, energy cost) pairs for square spirit production.
+pub const SPIRIT_COSTS_SQUARE: &[(u32, u32)] = &[(0, 400), (10, 800)];
 
 #[link(wasm_import_module = "bases")]
 extern "C" {
@@ -27,18 +31,18 @@ extern "C" {
     /// ```
     /// | threshold | energy |
     /// |-----------|--------|
-    /// | 100       | 50     |
-    /// | 200       | 100    |
-    /// | 300       | 200    |
-    /// | ---       | 400    |
+    /// | 0         | 50     |
+    /// | 100       | 100    |
+    /// | 200       | 200    |
+    /// | 300       | 400    |
     /// ```
     ///
     /// ### Squares
     /// ```
     /// | threshold | energy |
     /// |-----------|--------|
-    /// | 10        | 400    |
-    /// | ---       | 800    |
+    /// | 0         | 400    |
+    /// | 10        | 800    |
     /// ```
     #[link_name = "currentSpiritCost"]
     pub fn current_spirit_cost(index: usize) -> u32;
@@ -54,6 +58,7 @@ extern "C" {
     /// Get the hp of the base. Always 1.
     pub fn hp(index: usize) -> u32;
 
+    /// Get the id of the player who owns the base.
     pub fn player_id(index: usize) -> usize;
 
     /// Get the x coordinate of the base.

@@ -2,9 +2,14 @@ use std::os::raw::c_char;
 
 use crate::position::Position;
 
+/// Maximum range of energy transfer.
 pub const ENERGIZE_RANGE: f32 = 200.;
+/// Movement speed of spirits in units per tick.
 pub const MOVEMENT_SPEED: f32 = 20.;
-pub const JUMP_DISTANCE: f32 = 300.;
+/// Maximum jump distance for squares.
+pub const JUMP_RANGE: f32 = 300.;
+/// Maximum merge distance for circles. See `spirit::merge` for more
+/// information.
 pub const MERGE_DISTANCE: f32 = 12.;
 
 #[link(wasm_import_module = "spirits")]
@@ -25,15 +30,17 @@ extern "C" {
     /// Only available for circles.
     pub fn divide(index: usize);
 
-    /// Transfers energy to a base equal to the spirit's size.
+    /// Transfer energy to a base equal to the spirit's size.
     /// Maximum distance for energy transfer is 200 units.
     #[link_name = "energizeBase"]
     pub fn energize_base(index: usize, base_index: usize);
 
+    /// Transfer energy to an outpost.
+    /// Maximum distance for energy transfer is 200 units.
     #[link_name = "energizeOutpost"]
-    pub fn energize_output(index: usize, outpost_index: usize);
+    pub fn energize_outpost(index: usize, outpost_index: usize);
 
-    /// Transfers energy to another spirit* equal to the spirit's size.
+    /// Transfer energy to another spirit* equal to the spirit's size.
     /// Maximum distance for energy transfer is 200 units.
     ///
     /// *If the target index is the same as the index, it will instead attempt
@@ -56,6 +63,8 @@ extern "C" {
     /// This is equal to 1 when the spirit is alive and 0 when it is dead.
     pub fn hp(index: usize) -> u32;
 
+    /// Get the spirit's id. This is persistent for the spirit, unlike its
+    /// index. A player_id and id uniquely identify a spirit.
     pub fn id(index: usize) -> usize;
 
     /// Returns `true` if the spirit id matches the player id. This means you
@@ -77,6 +86,7 @@ extern "C" {
     /// Only available for circles.
     pub fn merge(index: usize, target_index: usize);
 
+    /// Get the id of the player who controls the spirit.
     pub fn player_id(index: usize) -> usize;
 
     /// Get the x coordinate of the spirit.
