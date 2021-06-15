@@ -8,6 +8,8 @@
 
 pub mod base;
 pub mod console;
+pub mod outpost;
+pub mod player;
 pub mod position;
 pub mod spirit;
 pub mod star;

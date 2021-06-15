@@ -54,6 +54,8 @@ extern "C" {
     /// Get the hp of the base. Always 1.
     pub fn hp(index: usize) -> u32;
 
+    pub fn player_id(index: usize) -> usize;
+
     /// Get the x coordinate of the base.
     #[link_name = "positionX"]
     pub fn position_x(index: usize) -> f32;

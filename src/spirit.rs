@@ -30,12 +30,15 @@ extern "C" {
     #[link_name = "energizeBase"]
     pub fn energize_base(index: usize, base_index: usize);
 
+    #[link_name = "energizeOutpost"]
+    pub fn energize_output(index: usize, outpost_index: usize);
+
     /// Transfers energy to another spirit* equal to the spirit's size.
     /// Maximum distance for energy transfer is 200 units.
     ///
     /// *If the target index is the same as the index, it will instead attempt
     /// to harvest from the nearest star.
-    pub fn energize(index: usize, target_index: usize);
+    pub fn energize(index: usize, spirit_index: usize);
 
     /// The energy capacity of a spirit is the maximum amount of energy is can
     /// hold. It is equal to ten times its size.
@@ -52,6 +55,8 @@ extern "C" {
     /// Get the spirit's hp.
     /// This is equal to 1 when the spirit is alive and 0 when it is dead.
     pub fn hp(index: usize) -> u32;
+
+    pub fn id(index: usize) -> usize;
 
     /// Returns `true` if the spirit id matches the player id. This means you
     /// have control over the spirit.
@@ -71,6 +76,8 @@ extern "C" {
     /// ### Disclaimer
     /// Only available for circles.
     pub fn merge(index: usize, target_index: usize);
+
+    pub fn player_id(index: usize) -> usize;
 
     /// Get the x coordinate of the spirit.
     #[link_name = "positionX"]
