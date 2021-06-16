@@ -22,6 +22,13 @@ extern "C" {
     /// ```
     pub fn count() -> usize;
 
+    /// Get the energy capacity of the star.
+    #[link_name = "energyCapacity"]
+    pub fn energy_capacity(index: usize) -> u32;
+
+    /// Get the current energy of the star.
+    pub fn energy(index: usize) -> u32;
+
     /// Get the x coordinate of the star.
     #[link_name = "positionX"]
     pub fn position_x(index: usize) -> f32;
