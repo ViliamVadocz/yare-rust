@@ -43,7 +43,7 @@ extern "C" {
     /// Transfer energy to another spirit* equal to the spirit's size.
     /// Maximum distance for energy transfer is 200 units.
     ///
-    /// *If the target index is the same as the index, it will instead attempt
+    /// *If spirit_index is the same as the index, it will instead attempt
     /// to harvest from the nearest star.
     pub fn energize(index: usize, spirit_index: usize);
 
@@ -79,12 +79,12 @@ extern "C" {
     /// Only available for squares.
     pub fn jump(index: usize, x: f32, y: f32);
 
-    /// Merges the spirit into another friendly spirit. Target needs to be
-    /// within 12 units in both x and y.
+    /// Merges the spirit into another friendly spirit. Target spirit
+    /// needs to be within 12 units in both x and y.
     ///
     /// ### Disclaimer
     /// Only available for circles.
-    pub fn merge(index: usize, target_index: usize);
+    pub fn merge(index: usize, spirit_index: usize);
 
     /// Get the index of the player who controls the spirit.
     #[link_name = "playerId"]
