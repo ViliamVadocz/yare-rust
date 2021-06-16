@@ -86,7 +86,8 @@ extern "C" {
     /// Only available for circles.
     pub fn merge(index: usize, target_index: usize);
 
-    /// Get the id of the player who controls the spirit.
+    /// Get the index of the player who controls the spirit.
+    #[link_name = "playerId"]
     pub fn player_id(index: usize) -> usize;
 
     /// Get the x coordinate of the spirit.

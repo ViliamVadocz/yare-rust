@@ -58,7 +58,8 @@ extern "C" {
     /// Get the hp of the base. Always 1.
     pub fn hp(index: usize) -> u32;
 
-    /// Get the id of the player who owns the base.
+    /// Get the index of the player who owns the base.
+    #[link_name = "playerId"]
     pub fn player_id(index: usize) -> usize;
 
     /// Get the x coordinate of the base.

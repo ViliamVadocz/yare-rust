@@ -26,7 +26,8 @@ extern "C" {
     /// Get the current energy stored in the outpost.
     pub fn energy(index: usize) -> u32;
 
-    /// Get the id of the player who owns the outpost.
+    /// Get the index of the player who owns the outpost.
+    #[link_name = "playerId"]
     pub fn player_id(index: usize) -> usize;
 
     /// Get the x coordinate of the outpost.
