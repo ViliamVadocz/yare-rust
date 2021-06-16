@@ -5,7 +5,12 @@ pub const UPGRADE_ENERGY: u32 = 500;
 /// Range while the outpost has less energy than `UPGRADE_ENERGY`.
 pub const NORMAL_RANGE: f32 = 400.;
 /// Range while the outpost has at least `UPGRADE_ENERGY`.
-pub const UPGRADE_RANGE: f32 = 500.;
+pub const UPGRADE_RANGE: f32 = 600.;
+/// Energy used for attacks while the outpost has less energy than
+/// `UPGRADE_ENERGY`.
+pub const NORMAL_ATTACK: u32 = 1;
+/// Energy used for attacks while the outpost has at least `UPGRADE_ENERGY`.
+pub const UPGRADE_ATTACK: u32 = 4;
 
 #[link(wasm_import_module = "outposts")]
 extern "C" {
@@ -44,6 +49,6 @@ extern "C" {
     /// Get the range of the outpost.
     pub fn range(index: usize) -> f32;
 
-    /// Get the size of the outpost.
+    /// Get the size of the outpost. Always 20.
     pub fn size(index: usize) -> u32;
 }
