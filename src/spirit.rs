@@ -67,11 +67,6 @@ extern "C" {
     /// index. A player_id and id uniquely identify a spirit.
     pub fn id(index: usize) -> usize;
 
-    /// Returns `true` if the spirit id matches the player id. This means you
-    /// have control over the spirit.
-    #[link_name = "isFriendly"]
-    pub fn is_friendly(index: usize) -> bool;
-
     /// Teleports the spirit into a new location up to 300 units away. Costs
     /// half of spirit's energy capacity.
     ///

@@ -72,7 +72,4 @@ extern "C" {
 
     /// Get the position of the base.
     pub fn position(index: usize) -> Position;
-
-    /// Get the size of the base. Always 40.
-    pub fn size(index: usize) -> u32;
 }

@@ -32,7 +32,7 @@ extern "C" {
     pub fn energy(index: usize) -> u32;
 
     /// Get the index of the player who owns the outpost.
-    #[link_name = "playerId"]
+    #[link_name = "controlledBy"]
     pub fn player_id(index: usize) -> usize;
 
     /// Get the x coordinate of the outpost.
