@@ -48,7 +48,4 @@ extern "C" {
 
     /// Get the range of the outpost.
     pub fn range(index: usize) -> f32;
-
-    /// Get the size of the outpost. Always 20.
-    pub fn size(index: usize) -> u32;
 }
