@@ -14,6 +14,9 @@ pub mod base;
 pub mod console;
 /// Yare.io is a RTS game played by executing code.
 pub mod game;
+/// Render circles and lines on the map.
+/// First set the colour and then draw a shape.
+pub mod graphics;
 /// Outposts are objects that can be captured by energizing them.
 /// Outposts will shoot at random energies within their range.
 pub mod outpost;
