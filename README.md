@@ -55,9 +55,10 @@ that takes no arguments. This will be called every tick.
 #[no_mangle]
 pub extern "C" fn tick(_tick: u32) {
     unsafe {
+        let me = player::me();
         let (x, y) = unsafe { (base::position_x(0), base::position_y(0)) };
         for index in 0..spirit::count() {
-            if spirit::is_friendly(index) && spirit::hp(index) > 0 {
+            if spirit::player_id(index) == me && spirit::hp(index) > 0 {
                 spirit::goto(index, x, y);
             }
         }
@@ -71,6 +72,7 @@ For example, you could do something like this:
 ```rust
 use std::ffi::CString;
 use yare::spirit;
+use yare::player;
 
 /// Your own Spirit struct with all the information you want.
 struct Spirit {
@@ -95,13 +97,14 @@ impl Spirit {
 /// Parse all spirits into your own Spirit structs.
 fn get_spirits() -> Vec<Spirit> {
     unsafe {
+        let me = player::me();
         let count = spirit::count();
         let mut spirits = Vec::with_capacity(count);
         for index in 0..count {
             spirits.push(Spirit {
                 index,
                 alive: spirit::hp(index) > 0,
-                friendly: spirit::is_friendly(index),
+                friendly: spirit::player_id(index) == me,
             });
         }
         spirits
