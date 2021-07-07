@@ -1,6 +1,7 @@
 use std::os::raw::c_char;
 
-use crate::position::Position;
+use crate::bindings::position::Position;
+
 
 /// Maximum range of energy transfer.
 pub const ENERGIZE_RANGE: f32 = 200.;

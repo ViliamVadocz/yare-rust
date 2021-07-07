@@ -1,4 +1,4 @@
-use crate::position::Position;
+use crate::bindings::position::Position;
 
 /// Small stars only begin producing energy
 /// after this amount of ticks have passed.

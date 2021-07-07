@@ -3,6 +3,9 @@ name = "yare"
 version = "0.1.0"
 edition = "2018"
 
+[features]
+headless = []
+
 [dependencies]
 
 [profile.release]

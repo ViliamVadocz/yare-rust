@@ -1,4 +1,4 @@
-use crate::position::Position;
+use crate::bindings::position::Position;
 
 /// Energy needed for the outpost to "upgrade".
 pub const UPGRADE_ENERGY: u32 = 500;

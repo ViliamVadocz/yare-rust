@@ -1,4 +1,4 @@
-use crate::position::Position;
+use crate::bindings::position::Position;
 
 /// If an enemy spirit is within this radius to a base,
 /// it will not produce new spirits.
