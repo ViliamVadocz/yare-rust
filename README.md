@@ -56,7 +56,7 @@ that takes no arguments. This will be called every tick.
 pub extern "C" fn tick(_tick: u32) {
     unsafe {
         let me = player::me();
-        let (x, y) = unsafe { (base::position_x(0), base::position_y(0)) };
+        let Position {x, y} = base::position(0);
         for index in 0..spirit::count() {
             if spirit::player_id(index) == me && spirit::hp(index) > 0 {
                 spirit::goto(index, x, y);
@@ -124,12 +124,15 @@ pub extern "C" fn tick(_tick: u32) {
 }
 ```
 
+Check out this [template](https://github.com/swz-gh/yare-rust-template)
+for an example of how you can structure your code!
+
 ## Building
 
 To build your yare bot, you first need to compile to wasm. Use this:
 
 ```bash
-cargo rustc --target wasm32-unknown-unknown --release
+cargo rustc --target wasm32-unknown-unknown --release -- -C target-feature=+multivalue
 ```
 
 Then you want to pass it through wasm2yareio.
@@ -137,3 +140,6 @@ Then you want to pass it through wasm2yareio.
 ```bash
 node wasm2yareio target/wasm32-unknown-unknown/release/my-yare-bot.wasm
 ```
+
+It is also recommended that you install the tampermonkey script to automatically upload your code to yare.io:
+[Click to install](https://raw.githubusercontent.com/L0laapk3/yare.io-wasm/master/codeUpdate.user.js).
