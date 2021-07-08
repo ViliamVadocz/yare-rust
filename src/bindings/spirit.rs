@@ -88,10 +88,12 @@ extern "C" {
     /// If the last energized object was not a spirit, then blame @l0laapk3.
     #[link_name = "lastEnergizedId"]
     pub fn last_energized_id(index: usize) -> Id;
+
     /// Get the number of the last energized spirit by the spirit.
     /// If the last energized object was not a spirit, then blame @l0laapk3.
     #[link_name = "lastEnergizedNumber"]
     pub fn last_energized_number(index: usize) -> usize;
+
     /// Get the player id of the last energized spirit by the spirit.
     /// If the last energized object was not a spirit, then blame @l0laapk3.
     #[link_name = "lastEnergizedPlayerId"]
@@ -111,10 +113,12 @@ extern "C" {
     #[link_name = "playerId"]
     pub fn player_id(index: usize) -> usize;
 
+    #[deprecated(note = "Use position instead")]
     /// Get the x coordinate of the spirit.
     #[link_name = "positionX"]
     pub fn position_x(index: usize) -> f32;
 
+    #[deprecated(note = "Use position instead")]
     /// Get the y coordinate of the spirit.
     #[link_name = "positionY"]
     pub fn position_y(index: usize) -> f32;

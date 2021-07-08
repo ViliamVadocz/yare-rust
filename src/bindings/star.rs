@@ -33,10 +33,12 @@ extern "C" {
     /// Get the current energy of the star.
     pub fn energy(index: usize) -> u32;
 
+    #[deprecated(note = "Use position instead")]
     /// Get the x coordinate of the star.
     #[link_name = "positionX"]
     pub fn position_x(index: usize) -> f32;
 
+    #[deprecated(note = "Use position instead")]
     /// Get the y coordinate of the star.
     #[link_name = "positionY"]
     pub fn position_y(index: usize) -> f32;

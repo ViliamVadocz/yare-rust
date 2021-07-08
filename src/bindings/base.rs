@@ -62,10 +62,12 @@ extern "C" {
     #[link_name = "playerId"]
     pub fn player_id(index: usize) -> usize;
 
+    #[deprecated(note = "Use position instead")]
     /// Get the x coordinate of the base.
     #[link_name = "positionX"]
     pub fn position_x(index: usize) -> f32;
 
+    #[deprecated(note = "Use position instead")]
     /// Get the y coordinate of the base.
     #[link_name = "positionY"]
     pub fn position_y(index: usize) -> f32;
