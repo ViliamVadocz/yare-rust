@@ -12,6 +12,10 @@ pub fn next_energy(energy: u32) -> u32 {
 
 #[link(wasm_import_module = "stars")]
 extern "C" {
+    /// The tick at (after?) which a star begins to generate energy.
+    #[link_name = "activeAt"]
+    pub fn active_at(index: usize) -> u32;
+
     /// Get the number of stars in the game.
     ///
     /// ### Usage

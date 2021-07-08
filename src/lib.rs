@@ -18,6 +18,8 @@ pub(crate) mod bindings {
     /// Render circles and lines on the map.
     /// First set the colour and then draw a shape.
     pub mod graphics;
+    /// Helper struct for spirit id.
+    pub mod id;
     /// Outposts are objects that can be captured by energizing them.
     /// Outposts will shoot at random energies within their range.
     pub mod outpost;
