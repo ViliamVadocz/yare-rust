@@ -36,7 +36,19 @@ pub(crate) mod bindings {
 pub use bindings::*;
 
 #[cfg(feature = "headless")]
-mod headless {}
+pub(crate) mod headless {
+    #![allow(missing_docs)]
+    #![allow(clippy::missing_safety_doc)]
+    pub mod base;
+    pub mod console;
+    pub mod game;
+    pub mod graphics;
+    pub mod outpost;
+    pub mod player;
+    pub mod spirit;
+    pub mod star;
+    pub mod yare_impl;
+}
 
 #[cfg(feature = "headless")]
 pub use headless::*;
