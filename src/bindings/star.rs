@@ -12,7 +12,7 @@ pub fn next_energy(energy: u32) -> u32 {
 
 #[link(wasm_import_module = "stars")]
 extern "C" {
-    /// The tick at (after?) which a star begins to generate energy.
+    /// The tick at which a star begins to generate energy.
     #[link_name = "activeAt"]
     pub fn active_at(index: usize) -> u32;
 
