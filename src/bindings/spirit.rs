@@ -1,9 +1,6 @@
-use crate::bindings::id::Id;
-
 use std::os::raw::c_char;
 
-use crate::bindings::position::Position;
-
+use crate::bindings::{id::Id, position::Position};
 
 /// Maximum range of energy transfer.
 pub const ENERGIZE_RANGE: f32 = 200.;
@@ -16,7 +13,8 @@ pub const JUMP_RANGE: f32 = 300.;
 pub const MERGE_DISTANCE: f32 = 12.;
 /// Radius from the exploding spirit where enemy spirits take damage.
 pub const EXPLODE_RADIUS: f32 = 100.;
-/// The amount of damage given to enemy spirits in the `EXPLORE_RADIUS` once a spitit explodes.
+/// The amount of damage given to enemy spirits in the `EXPLORE_RADIUS`
+/// once a spitit explodes.
 pub const EXPLODE_DAMAGE: u32 = 10;
 
 #[link(wasm_import_module = "spirits")]
