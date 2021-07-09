@@ -43,11 +43,13 @@ pub(crate) mod headless {
     #![allow(clippy::missing_safety_doc)]
     pub mod base;
     pub mod console;
-    pub mod game;
+    pub use crate::bindings::game;
     pub mod graphics;
+    pub use crate::bindings::id;
     pub mod outpost;
     pub mod player;
     pub mod spirit;
+    pub use crate::bindings::position;
     pub mod star;
     pub mod yare_impl;
 }

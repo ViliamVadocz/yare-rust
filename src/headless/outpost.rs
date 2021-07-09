@@ -1,4 +1,7 @@
-pub use crate::bindings::outpost::{UPGRADE_ENERGY, NORMAL_RANGE, UPGRADE_RANGE, NORMAL_ATTACK, UPGRADE_ATTACK};
+pub use crate::bindings::{
+    outpost::{NORMAL_ATTACK, NORMAL_RANGE, UPGRADE_ATTACK, UPGRADE_ENERGY, UPGRADE_RANGE},
+    position::Position,
+};
 use crate::headless::yare_impl::OUTPOSTS;
 
 pub unsafe fn count() -> usize {
@@ -13,11 +16,19 @@ pub unsafe fn energy(index: usize) -> u32 {
 pub unsafe fn player_id(index: usize) -> usize {
     OUTPOSTS[index].player_id
 }
+#[deprecated]
 pub unsafe fn position_x(index: usize) -> f32 {
     OUTPOSTS[index].pos.x
 }
+#[deprecated]
 pub unsafe fn position_y(index: usize) -> f32 {
     OUTPOSTS[index].pos.y
+}
+pub unsafe fn position(index: usize) -> Position {
+    Position {
+        x: OUTPOSTS[index].pos.x,
+        y: OUTPOSTS[index].pos.y,
+    }
 }
 pub unsafe fn range(index: usize) -> f32 {
     OUTPOSTS[index].range
