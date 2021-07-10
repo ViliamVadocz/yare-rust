@@ -37,10 +37,10 @@ pub unsafe fn energize(index: usize, spirit_index: usize) {
         target: spirit_index,
     });
 }
-pub unsafe fn energy_capacity(index: usize) -> u32 {
+pub unsafe fn energy_capacity(index: usize) -> i32 {
     SPIRITS[index].energy_cap
 }
-pub unsafe fn energy(index: usize) -> u32 {
+pub unsafe fn energy(index: usize) -> i32 {
     SPIRITS[index].energy
 }
 pub unsafe fn goto(index: usize, x: f32, y: f32) {
@@ -88,6 +88,6 @@ pub unsafe fn shout(_index: usize, _string: *const c_char) {}
 pub unsafe fn shape(index: usize) -> usize {
     SPIRITS[index].shape.into()
 }
-pub unsafe fn size(index: usize) -> u32 {
+pub unsafe fn size(index: usize) -> i32 {
     SPIRITS[index].size
 }

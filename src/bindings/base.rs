@@ -4,12 +4,12 @@ use crate::bindings::position::Position;
 /// it will not produce new spirits.
 pub const DISRUPTION_RADIUS: f32 = 400.;
 /// (Threshold, energy cost) pairs for circle spirit production.
-pub const SPIRIT_COSTS_CIRCLE: &[(u32, u32)] =
+pub const SPIRIT_COSTS_CIRCLE: &[(u32, i32)] =
     &[(0, 25), (50, 50), (100, 100), (200, 200), (300, 400)];
 /// (Threshold, energy cost) pairs for square spirit production.
-pub const SPIRIT_COSTS_SQUARE: &[(u32, u32)] = &[(0, 400), (10, 800)];
+pub const SPIRIT_COSTS_SQUARE: &[(u32, i32)] = &[(0, 400), (10, 800)];
 /// (Threshold, energy cost) pairs for triangle spirit production.
-pub const SPIRIT_COSTS_TRIANGLE: &[(u32, u32)] = &[(0, 60), (30, 120), (120, 300)];
+pub const SPIRIT_COSTS_TRIANGLE: &[(u32, i32)] = &[(0, 60), (30, 120), (120, 300)];
 /// Offset from the player 0 base to the spirit production position.
 pub const PRODUCTION_OFFSET_0: Position = Position { x: -20., y: -60. };
 /// Offset from the player 1 base to the spirit production position.
@@ -62,15 +62,15 @@ extern "C" {
     /// | 120       | 300    |
     /// ```
     #[link_name = "currentSpiritCost"]
-    pub fn current_spirit_cost(index: usize) -> u32;
+    pub fn current_spirit_cost(index: usize) -> i32;
 
     /// Get the energy capacity of the base.
     /// This is 400 for circles, 1000 for squares, 600 for triangles.
     #[link_name = "energyCapacity"]
-    pub fn energy_capacity(index: usize) -> u32;
+    pub fn energy_capacity(index: usize) -> i32;
 
     /// Get the current energy stored in the base.
-    pub fn energy(index: usize) -> u32;
+    pub fn energy(index: usize) -> i32;
 
     /// Get the hp of the base. Always 1.
     pub fn hp(index: usize) -> u32;

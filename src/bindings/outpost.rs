@@ -1,16 +1,16 @@
 use crate::bindings::position::Position;
 
 /// Energy needed for the outpost to "upgrade".
-pub const UPGRADE_ENERGY: u32 = 500;
+pub const UPGRADE_ENERGY: i32 = 500;
 /// Range while the outpost has less energy than `UPGRADE_ENERGY`.
 pub const NORMAL_RANGE: f32 = 400.;
 /// Range while the outpost has at least `UPGRADE_ENERGY`.
 pub const UPGRADE_RANGE: f32 = 600.;
 /// Energy used for attacks while the outpost has less energy than
 /// `UPGRADE_ENERGY`.
-pub const NORMAL_ATTACK: u32 = 1;
+pub const NORMAL_ATTACK: i32 = 1;
 /// Energy used for attacks while the outpost has at least `UPGRADE_ENERGY`.
-pub const UPGRADE_ATTACK: u32 = 4;
+pub const UPGRADE_ATTACK: i32 = 4;
 
 #[link(wasm_import_module = "outposts")]
 extern "C" {
@@ -26,10 +26,10 @@ extern "C" {
 
     /// Get the energy capacity of the outpost. Always 1000.
     #[link_name = "energyCapacity"]
-    pub fn energy_capacity(index: usize) -> u32;
+    pub fn energy_capacity(index: usize) -> i32;
 
     /// Get the current energy stored in the outpost.
-    pub fn energy(index: usize) -> u32;
+    pub fn energy(index: usize) -> i32;
 
     /// Get the index of the player who owns the outpost.
     #[link_name = "controlledBy"]

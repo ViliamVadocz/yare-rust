@@ -7,10 +7,10 @@ pub unsafe fn active_at(index: usize) -> u32 {
 pub unsafe fn count() -> usize {
     STARS.len()
 }
-pub unsafe fn energy_capacity(index: usize) -> u32 {
+pub unsafe fn energy_capacity(index: usize) -> i32 {
     STARS[index].energy_cap
 }
-pub unsafe fn energy(index: usize) -> u32 {
+pub unsafe fn energy(index: usize) -> i32 {
     STARS[index].energy
 }
 #[deprecated]

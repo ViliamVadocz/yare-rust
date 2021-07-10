@@ -7,10 +7,10 @@ use crate::headless::yare_impl::OUTPOSTS;
 pub unsafe fn count() -> usize {
     OUTPOSTS.len()
 }
-pub unsafe fn energy_capacity(index: usize) -> u32 {
+pub unsafe fn energy_capacity(index: usize) -> i32 {
     OUTPOSTS[index].energy_cap
 }
-pub unsafe fn energy(index: usize) -> u32 {
+pub unsafe fn energy(index: usize) -> i32 {
     OUTPOSTS[index].energy
 }
 pub unsafe fn player_id(index: usize) -> usize {

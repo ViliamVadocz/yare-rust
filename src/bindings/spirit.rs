@@ -15,7 +15,7 @@ pub const MERGE_DISTANCE: f32 = 12.;
 pub const EXPLODE_RADIUS: f32 = 100.;
 /// The amount of damage given to enemy spirits in the `EXPLORE_RADIUS`
 /// once a spitit explodes.
-pub const EXPLODE_DAMAGE: u32 = 10;
+pub const EXPLODE_DAMAGE: i32 = 10;
 
 #[link(wasm_import_module = "spirits")]
 extern "C" {
@@ -55,10 +55,13 @@ extern "C" {
     /// The energy capacity of a spirit is the maximum amount of energy is can
     /// hold. It is equal to ten times its size.
     #[link_name = "energyCapacity"]
-    pub fn energy_capacity(index: usize) -> u32;
+    pub fn energy_capacity(index: usize) -> i32;
 
     /// Get the current energy of the spirit.
-    pub fn energy(index: usize) -> u32;
+    ///
+    /// ### Disclaimer
+    /// Only available for triangles.
+    pub fn energy(index: usize) -> i32;
 
     /// Spirit explodes, killing itself and dealing 10 damage
     /// to all enemy spirits within 100 radius.
@@ -97,8 +100,8 @@ extern "C" {
     #[link_name = "lastEnergizedPlayerId"]
     pub fn last_energized_player_id(index: usize) -> usize;
 
-    /// Merges the spirit into another friendly spirit. Target spirit
-    /// needs to be within 12 units in both x and y.
+    /// Merge the spirit into another friendly spirit. Target spirit
+    /// needs to be within a 10 unit radius.
     ///
     /// ### Disclaimer
     /// Only available for circles.
@@ -124,7 +127,7 @@ extern "C" {
     /// Get the position of the spirit.
     pub fn position(index: usize) -> Position;
 
-    /// Shows a message above the spirit as a light-weight in-game
+    /// Show a message above the spirit as a light-weight in-game
     /// communication. Useful for some debugging as well.
     ///
     /// ### Usage
@@ -141,7 +144,9 @@ extern "C" {
     /// This is 0 for circles, 1 for squares.
     pub fn shape(index: usize) -> usize;
 
-    /// Get the size of the spirit. By default this is 1 for circles, 10 for
-    /// squares. Circles can achieve a maximum size of 100 through merging.
-    pub fn size(index: usize) -> u32;
+    /// Get the size of the spirit.
+    /// Circles can be 1-100, squares have 10, triangles have 3.
+    /// Circles increase their size by merging.
+    /// The size determines the rate of energy transfer.
+    pub fn size(index: usize) -> i32;
 }

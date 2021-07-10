@@ -2,8 +2,8 @@ use crate::bindings::position::Position;
 
 /// Each tick a star generates 3 + 1% of its current energy,
 /// rounded to the nearest integer.
-pub fn next_energy(energy: u32) -> u32 {
-    ((energy + 3) as f32 * 1.01).round() as u32
+pub fn next_energy(energy: i32) -> i32 {
+    ((energy + 3) as f32 * 1.01).round() as i32
 }
 
 #[link(wasm_import_module = "stars")]
@@ -24,10 +24,10 @@ extern "C" {
 
     /// Get the energy capacity of the star.
     #[link_name = "energyCapacity"]
-    pub fn energy_capacity(index: usize) -> u32;
+    pub fn energy_capacity(index: usize) -> i32;
 
     /// Get the current energy of the star.
-    pub fn energy(index: usize) -> u32;
+    pub fn energy(index: usize) -> i32;
 
     #[deprecated(note = "Use position instead")]
     /// Get the x coordinate of the star.

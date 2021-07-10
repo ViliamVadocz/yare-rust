@@ -14,13 +14,13 @@ use crate::headless::yare_impl::BASES;
 pub unsafe fn count() -> usize {
     BASES.len()
 }
-pub unsafe fn current_spirit_cost(index: usize) -> u32 {
+pub unsafe fn current_spirit_cost(index: usize) -> i32 {
     BASES[index].spirit_cost
 }
-pub unsafe fn energy_capacity(index: usize) -> u32 {
+pub unsafe fn energy_capacity(index: usize) -> i32 {
     BASES[index].energy_cap
 }
-pub unsafe fn energy(index: usize) -> u32 {
+pub unsafe fn energy(index: usize) -> i32 {
     BASES[index].energy
 }
 pub unsafe fn hp(index: usize) -> u32 {
