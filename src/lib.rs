@@ -52,6 +52,7 @@ pub(crate) mod headless {
     pub mod player;
     pub mod spirit;
     pub use crate::bindings::position;
+    pub mod random;
     pub mod star;
     pub mod yare_impl;
 }

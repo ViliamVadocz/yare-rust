@@ -40,14 +40,14 @@ impl Into<usize> for Shape {
 
 #[derive(Clone, Debug)]
 pub(crate) struct Spirit {
-    pub energy_cap: u32,
-    pub energy: u32,
+    pub energy_cap: i32,
+    pub energy: i32,
     pub hp: u32,
     pub id: usize,
     pub player_id: usize,
     pub pos: Pos,
     pub shape: Shape,
-    pub size: u32,
+    pub size: i32,
 }
 
 impl Spirit {
@@ -63,12 +63,12 @@ impl Spirit {
 
 #[derive(Clone, Debug)]
 pub(crate) struct Base {
-    pub energy_cap: u32,
-    pub energy: u32,
+    pub energy_cap: i32,
+    pub energy: i32,
     pub hp: u32,
     pub player_id: usize,
     pub pos: Pos,
-    pub spirit_cost: u32,
+    pub spirit_cost: i32,
 }
 
 impl Base {
@@ -98,8 +98,8 @@ impl Base {
 
 #[derive(Clone, Debug)]
 pub(crate) struct Star {
-    pub energy_cap: u32,
-    pub energy: u32,
+    pub energy_cap: i32,
+    pub energy: i32,
     pub pos: Pos,
     pub active_at: u32,
 }
@@ -131,8 +131,8 @@ impl Star {
 
 #[derive(Clone, Debug)]
 pub(crate) struct Outpost {
-    pub energy_cap: u32,
-    pub energy: u32,
+    pub energy_cap: i32,
+    pub energy: i32,
     pub player_id: usize,
     pub pos: Pos,
     pub range: f32,

@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2018"
 
 [features]
-headless = []
+headless = ["rand"]
 
 [dependencies]
+rand = { version = "0.8.4", optional = true }
 
 [profile.release]
 opt-level = "s"
