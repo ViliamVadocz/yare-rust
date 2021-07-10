@@ -27,6 +27,8 @@ pub(crate) mod bindings {
     pub mod player;
     /// Position is given as an x and y coordinate on an Euclidean plane.
     pub mod position;
+    /// Access to random numbers.
+    pub mod random;
     /// Spirits are the game's units. They carry energy which is used for
     /// creating new spirits, fighting, and capturing outposts.
     pub mod spirit;
