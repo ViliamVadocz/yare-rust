@@ -1,9 +1,11 @@
+use std::cmp::max;
+
 use crate::bindings::position::Position;
 
 /// Each tick a star generates 3 + 1% of its current energy,
 /// rounded to the nearest integer.
 pub fn next_energy(energy: i32) -> i32 {
-    ((energy + 3) as f32 * 1.01).round() as i32
+    ((max(energy, 0) + 3) as f32 * 1.01).round() as i32
 }
 
 #[link(wasm_import_module = "stars")]
