@@ -2,7 +2,7 @@
 extern "C" {
     /// Set the colour of future shapes.
     #[link_name = "color"]
-    pub fn colour(red: u8, green: u8, blue: u8, alpha: u8);
+    pub fn colour(red: u8, green: u8, blue: u8, alpha: f32);
 
     /// Draw a circle with a centre at (x, y) and the given radius.
     pub fn circle(x: f32, y: f32, radius: f32);
