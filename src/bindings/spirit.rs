@@ -8,6 +8,8 @@ pub const ENERGIZE_RANGE: f32 = 200.;
 pub const MOVEMENT_SPEED: f32 = 20.;
 /// Maximum jump distance for squares.
 pub const JUMP_RANGE: f32 = 300.;
+/// The cost of a jump for squares.
+pub const JUMP_COST: i32 = 50;
 /// Maximum merge distance for circles. See `spirit::merge` for more
 /// information.
 pub const MERGE_DISTANCE: f32 = 12.;

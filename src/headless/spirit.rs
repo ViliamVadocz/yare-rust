@@ -6,6 +6,7 @@ pub use crate::bindings::{
         ENERGIZE_RANGE,
         EXPLODE_DAMAGE,
         EXPLODE_RADIUS,
+        JUMP_COST,
         JUMP_RANGE,
         MERGE_DISTANCE,
         MOVEMENT_SPEED,
