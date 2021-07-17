@@ -72,7 +72,8 @@ extern "C" {
     /// Get the current energy stored in the base.
     pub fn energy(index: usize) -> i32;
 
-    /// Get the hp of the base. Always 1.
+    /// Get the hp of the base.
+    /// This is how many ticks of energizing it can survive when it has no energy to block.
     pub fn hp(index: usize) -> u32;
 
     /// Get the index of the player who owns the base.
