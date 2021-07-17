@@ -10,10 +10,41 @@ pub const SPIRIT_COSTS_CIRCLE: &[(u32, i32)] =
 pub const SPIRIT_COSTS_SQUARE: &[(u32, i32)] = &[(0, 400), (10, 800)];
 /// (Threshold, energy cost) pairs for triangle spirit production.
 pub const SPIRIT_COSTS_TRIANGLE: &[(u32, i32)] = &[(0, 60), (30, 120), (120, 300)];
-/// Offset from the player 0 base to the spirit production position.
-pub const PRODUCTION_OFFSET_0: Position = Position { x: -20., y: -60. };
-/// Offset from the player 1 base to the spirit production position.
-pub const PRODUCTION_OFFSET_1: Position = Position { x: 20., y: 60. };
+/// Spirit production position offset from base.
+/// Index of offset corresponds to player index.
+pub const PRODUCTION_OFFSET: [Position; 2] = [Position { x: -20., y: -60. }, Position { x: 20., y: 60.}];
+
+/// Spirit start offset from base for circles.
+pub const CIRCLE_START_OFFSET: [&[Position]; 2] = [
+    &[
+        Position{ x: -240., y: -100. },
+        Position{ x: -220., y: -100. },
+        Position{ x: -200., y: -100. },
+        Position{ x: -180., y: -100. },
+        Position{ x: -160., y: -100. },
+        Position{ x: -140., y: -100. },
+        Position{ x: -230., y: -80. },
+        Position{ x: -210., y: -80. },
+        Position{ x: -190., y: -80. },
+        Position{ x: -170., y: -80. },
+        Position{ x: -150., y: -80. },
+        Position{ x: -130., y: -80. },
+    ],
+    &[
+        Position{ x: 240., y: 100. },
+        Position{ x: 220., y: 100. },
+        Position{ x: 200., y: 100. },
+        Position{ x: 180., y: 100. },
+        Position{ x: 160., y: 100. },
+        Position{ x: 140., y: 100. },
+        Position{ x: 230., y: 80. },
+        Position{ x: 210., y: 80. },
+        Position{ x: 190., y: 80. },
+        Position{ x: 170., y: 80. },
+        Position{ x: 150., y: 80. },
+        Position{ x: 130., y: 80. },
+    ]
+];
 
 #[link(wasm_import_module = "bases")]
 extern "C" {
