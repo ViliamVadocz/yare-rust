@@ -6,8 +6,9 @@ use crate::bindings::{id::Id, position::Position};
 pub const ENERGIZE_RANGE: f32 = 200.;
 /// Movement speed of spirits in units per tick.
 pub const MOVEMENT_SPEED: f32 = 20.;
-/// Maximum jump distance for squares.
-pub const JUMP_RANGE: f32 = 300.;
+/// The cost of a jump for squares per unit distance. Cost is then rounded up.
+pub const JUMP_COST_PER_DIST: f32 = 0.2;
+#[deprecated(note = "Jump cost changed to be proportional to distance")]
 /// The cost of a jump for squares.
 pub const JUMP_COST: i32 = 50;
 /// Maximum merge distance for circles. See `spirit::merge` for more
@@ -16,7 +17,7 @@ pub const MERGE_DISTANCE: f32 = 12.;
 /// Radius from the exploding spirit where enemy spirits take damage.
 pub const EXPLODE_RADIUS: f32 = 100.;
 /// The amount of damage given to enemy spirits in the `EXPLORE_RADIUS`
-/// once a spitit explodes.
+/// once a spirit explodes.
 pub const EXPLODE_DAMAGE: i32 = 10;
 
 #[link(wasm_import_module = "spirits")]
