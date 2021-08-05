@@ -5,6 +5,7 @@ pub use crate::bindings::{
         SPIRIT_COSTS_CIRCLE,
         SPIRIT_COSTS_SQUARE,
         SPIRIT_COSTS_TRIANGLE,
+        START_BASE_HP,
     },
     position::Position,
 };

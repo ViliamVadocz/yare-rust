@@ -7,12 +7,14 @@ pub const DISRUPTION_RADIUS: f32 = 400.;
 pub const SPIRIT_COSTS_CIRCLE: &[(u32, i32)] =
     &[(0, 25), (50, 50), (100, 100), (200, 200), (300, 400)];
 /// (Threshold, energy cost) pairs for square spirit production.
-pub const SPIRIT_COSTS_SQUARE: &[(u32, i32)] = &[(0, 400), (10, 800)];
+pub const SPIRIT_COSTS_SQUARE: &[(u32, i32)] = &[(0, 360), (10, 700)];
 /// (Threshold, energy cost) pairs for triangle spirit production.
-pub const SPIRIT_COSTS_TRIANGLE: &[(u32, i32)] = &[(0, 60), (30, 120), (120, 300)];
+pub const SPIRIT_COSTS_TRIANGLE: &[(u32, i32)] = &[(0, 90), (30, 120), (120, 300)];
 /// Spirit production position offset from base.
 /// Index of offset corresponds to player index.
 pub const PRODUCTION_OFFSET: [Position; 2] = [Position { x: -20., y: -60. }, Position { x: 20., y: 60.}];
+/// The hp the bases star with.
+pub const START_BASE_HP: u32 = 5;
 
 /// Spirit start offset from base for circles.
 pub const CIRCLE_START_OFFSET: [&[Position]; 2] = [
@@ -80,15 +82,15 @@ extern "C" {
     /// ```
     /// | threshold | energy |
     /// |-----------|--------|
-    /// | 0         | 400    |
-    /// | 10        | 800    |
+    /// | 0         | 360    |
+    /// | 10        | 700    |
     /// ```
     ///
     /// ### Triangles
     /// ```
     /// | threshold | energy |
     /// |-----------|--------|
-    /// | 0         | 60     |
+    /// | 0         | 90     |
     /// | 30        | 120    |
     /// | 120       | 300    |
     /// ```

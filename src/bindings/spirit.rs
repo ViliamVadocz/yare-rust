@@ -13,9 +13,9 @@ pub const JUMP_COST_PER_DIST: f32 = 0.2;
 pub const JUMP_COST: i32 = 50;
 /// Maximum merge distance for circles. See `spirit::merge` for more
 /// information.
-pub const MERGE_DISTANCE: f32 = 12.;
+pub const MERGE_DISTANCE: f32 = 10.;
 /// Radius from the exploding spirit where enemy spirits take damage.
-pub const EXPLODE_RADIUS: f32 = 100.;
+pub const EXPLODE_RADIUS: f32 = 160.;
 /// The amount of damage given to enemy spirits in the `EXPLORE_RADIUS`
 /// once a spirit explodes.
 pub const EXPLODE_DAMAGE: i32 = 10;
