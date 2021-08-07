@@ -8,9 +8,6 @@ pub const ENERGIZE_RANGE: f32 = 200.;
 pub const MOVEMENT_SPEED: f32 = 20.;
 /// The cost of a jump for squares per unit distance. Cost is then rounded up.
 pub const JUMP_COST_PER_DIST: f32 = 0.2;
-#[deprecated(note = "Jump cost changed to be proportional to distance")]
-/// The cost of a jump for squares.
-pub const JUMP_COST: i32 = 50;
 /// Maximum merge distance for circles. See `spirit::merge` for more
 /// information.
 pub const MERGE_DISTANCE: f32 = 10.;
@@ -110,9 +107,11 @@ extern "C" {
     /// Only available for circles.
     pub fn merge(index: usize, spirit_index: usize);
 
+    #[deprecated(note = "Use spirit::id instead.")]
     /// Get the number of the spirit.
     pub fn number(index: usize) -> usize;
 
+    #[deprecated(note = "Use spirit::id instead.")]
     /// Get the index of the player who controls the spirit.
     #[link_name = "playerId"]
     pub fn player_id(index: usize) -> usize;
