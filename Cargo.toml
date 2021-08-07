@@ -2,6 +2,12 @@
 name = "yare"
 version = "0.1.0"
 edition = "2018"
+description = "Lightweight rust bindings for yare.io with plentiful documentation and helpful constants."
+readme = "README.md"
+repository = "https://github.com/ViliamVadocz/yare-rust"
+license = "GPL-2.0-or-later"
+keywords = ["yare", "yareio", "bindings", "wasm", "webassembly"]
+categories = ["external-ffi-bindings", "games", "wasm"]
 
 [features]
 headless = ["rand"]
