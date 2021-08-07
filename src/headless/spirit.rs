@@ -71,14 +71,6 @@ pub unsafe fn merge(index: usize, spirit_index: usize) {
 pub unsafe fn player_id(index: usize) -> usize {
     SPIRITS[index].player_id
 }
-#[deprecated]
-pub unsafe fn position_x(index: usize) -> f32 {
-    SPIRITS[index].pos.x
-}
-#[deprecated]
-pub unsafe fn position_y(index: usize) -> f32 {
-    SPIRITS[index].pos.y
-}
 pub unsafe fn position(index: usize) -> Position {
     Position {
         x: SPIRITS[index].pos.x,

@@ -29,14 +29,6 @@ pub unsafe fn hp(index: usize) -> u32 {
 pub unsafe fn player_id(index: usize) -> usize {
     BASES[index].player_id
 }
-#[deprecated]
-pub unsafe fn position_x(index: usize) -> f32 {
-    BASES[index].pos.x
-}
-#[deprecated]
-pub unsafe fn position_y(index: usize) -> f32 {
-    BASES[index].pos.y
-}
 pub unsafe fn position(index: usize) -> Position {
     Position {
         x: BASES[index].pos.x,
