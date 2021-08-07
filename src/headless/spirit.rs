@@ -1,13 +1,13 @@
 use std::os::raw::c_char;
 
 pub use crate::bindings::{
+    id::Id,
     position::Position,
     spirit::{
         ENERGIZE_RANGE,
         EXPLODE_DAMAGE,
         EXPLODE_RADIUS,
-        JUMP_COST,
-        JUMP_RANGE,
+        JUMP_COST_PER_DIST,
         MERGE_DISTANCE,
         MOVEMENT_SPEED,
     },
@@ -44,6 +44,9 @@ pub unsafe fn energy_capacity(index: usize) -> i32 {
 pub unsafe fn energy(index: usize) -> i32 {
     SPIRITS[index].energy
 }
+pub unsafe fn explode(index: usize) {
+    COMMANDS.push(Command::Explode { index })
+}
 pub unsafe fn goto(index: usize, x: f32, y: f32) {
     COMMANDS.push(Command::Goto {
         index,
@@ -53,8 +56,11 @@ pub unsafe fn goto(index: usize, x: f32, y: f32) {
 pub unsafe fn hp(index: usize) -> u32 {
     SPIRITS[index].hp
 }
-pub unsafe fn id(index: usize) -> usize {
-    SPIRITS[index].id
+pub unsafe fn id(index: usize) -> Id {
+    Id {
+        player_id: SPIRITS[index].player_id,
+        number: SPIRITS[index].id,
+    }
 }
 pub unsafe fn jump(index: usize, x: f32, y: f32) {
     COMMANDS.push(Command::Jump {
@@ -67,9 +73,6 @@ pub unsafe fn merge(index: usize, spirit_index: usize) {
         index,
         target: spirit_index,
     });
-}
-pub unsafe fn player_id(index: usize) -> usize {
-    SPIRITS[index].player_id
 }
 pub unsafe fn position(index: usize) -> Position {
     Position {

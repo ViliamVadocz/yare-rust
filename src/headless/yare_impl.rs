@@ -1,7 +1,8 @@
 use crate::bindings::{
-    base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE, CIRCLE_START_OFFSET}, // SQUARE_START_OFFSET, TRIANGLE_START_OFFSET},
+    base::{CIRCLE_START_OFFSET, SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE},
     game::MAX_GAME_LEN,
     outpost::NORMAL_RANGE,
+    position::Position,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -10,12 +11,9 @@ pub(crate) struct Pos {
     pub y: f32,
 }
 
-impl From<Position> for Pos {
-    fn from(pos: Position) -> Pos {
-        Pos {
-            x: pos.x,
-            y: pos.y,
-        }
+impl From<&Position> for Pos {
+    fn from(pos: &Position) -> Pos {
+        Pos { x: pos.x, y: pos.y }
     }
 }
 
@@ -28,6 +26,7 @@ pub(crate) enum Command {
     Jump { index: usize, target: Pos },
     Merge { index: usize, target: usize },
     Divide { index: usize },
+    Explode { index: usize },
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -37,9 +36,9 @@ pub enum Shape {
     Triangle,
 }
 
-impl Into<usize> for Shape {
-    fn into(self) -> usize {
-        match self {
+impl From<Shape> for usize {
+    fn from(shape: Shape) -> usize {
+        match shape {
             Shape::Circle => 0,
             Shape::Square => 1,
             Shape::Triangle => 2,
@@ -60,7 +59,7 @@ pub(crate) struct Spirit {
 }
 
 impl Spirit {
-    fn new(player_id: usize, shape: Shape, pos: Pos) {
+    fn new(player_id: usize, shape: Shape, pos: Pos) -> Spirit {
         let size = match &shape {
             Shape::Circle => 1,
             Shape::Square => 10,
@@ -81,7 +80,10 @@ impl Spirit {
     fn game_start(player_id: usize, shape: &Shape) -> Vec<Spirit> {
         // TODO Create spirits in starting positions.
         match shape {
-            Shape::Circle => CIRCLE_START_OFFSET[player_id].iter().map(|p| Spirit::new(player_id, shape, p.into())),
+            Shape::Circle => CIRCLE_START_OFFSET[player_id]
+                .iter()
+                .map(|p| Spirit::new(player_id, *shape, p.into()))
+                .collect(),
             Shape::Square => vec![],
             Shape::Triangle => vec![],
         }
