@@ -13,7 +13,7 @@ pub const JUMP_COST_PER_DIST: f32 = 0.2;
 pub const MERGE_DISTANCE: f32 = 10.;
 /// Radius from the exploding spirit where enemy spirits take damage.
 pub const EXPLODE_RADIUS: f32 = 160.;
-/// The amount of damage given to enemy spirits in the `EXPLORE_RADIUS`
+/// The amount of damage given to enemy spirits in the `EXPLODE_RADIUS`
 /// once a spirit explodes.
 pub const EXPLODE_DAMAGE: i32 = 10;
 
