@@ -49,7 +49,7 @@ npm i minify
 ## Example
 
 This is an example bot. You need to define an external function called `tick`
-that takes no arguments. This will be called every tick.
+that has one parameter. This will be called every tick.
 
 ```rust
 #[no_mangle]
