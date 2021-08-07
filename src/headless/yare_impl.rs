@@ -1,5 +1,5 @@
 use crate::bindings::{
-    base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE},
+    base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE, CIRCLE_START_OFFSET}, // SQUARE_START_OFFSET, TRIANGLE_START_OFFSET},
     game::MAX_GAME_LEN,
     outpost::NORMAL_RANGE,
 };
@@ -8,6 +8,15 @@ use crate::bindings::{
 pub(crate) struct Pos {
     pub x: f32,
     pub y: f32,
+}
+
+impl From<Position> for Pos {
+    fn from(pos: Position) -> Pos {
+        Pos {
+            x: pos.x,
+            y: pos.y,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -51,10 +60,28 @@ pub(crate) struct Spirit {
 }
 
 impl Spirit {
+    fn new(player_id: usize, shape: Shape, pos: Pos) {
+        let size = match &shape {
+            Shape::Circle => 1,
+            Shape::Square => 10,
+            Shape::Triangle => 3,
+        };
+        Spirit {
+            energy_cap: size * 10,
+            energy: size * 10,
+            hp: 1,
+            id: 0, // TODO get id of last created spirit
+            player_id,
+            pos,
+            shape,
+            size,
+        }
+    }
+
     fn game_start(player_id: usize, shape: &Shape) -> Vec<Spirit> {
         // TODO Create spirits in starting positions.
         match shape {
-            Shape::Circle => vec![],
+            Shape::Circle => CIRCLE_START_OFFSET[player_id].iter().map(|p| Spirit::new(player_id, shape, p.into())),
             Shape::Square => vec![],
             Shape::Triangle => vec![],
         }
