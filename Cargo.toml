@@ -1,5 +1,5 @@
 [package]
-name = "yare"
+name = "yareio"
 version = "0.1.0"
 edition = "2018"
 description = "Lightweight rust bindings for yare.io with plentiful documentation and helpful constants."

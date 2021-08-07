@@ -32,7 +32,7 @@ Put this in your `Cargo.toml`.
 crate-type = ["cdylib"]
 
 [dependencies]
-yare = { git = "https://github.com/ViliamVadocz/yare-rust" }
+yareio = "0.1.0"
 
 [profile.release]
 opt-level = "s"
@@ -71,8 +71,8 @@ For example, you could do something like this:
 
 ```rust
 use std::ffi::CString;
-use yare::spirit;
-use yare::player;
+use yareio::spirit;
+use yareio::player;
 
 /// Your own Spirit struct with all the information you want.
 struct Spirit {
