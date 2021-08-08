@@ -60,6 +60,22 @@ impl Vec2 {
     pub fn towards(self, other: Vec2, length: f32) -> Vec2 {
         self + (other - self).normalize() * length
     }
+
+    pub fn rotated(self, radians: f32) -> Vec2 {
+        let c = radians.cos();
+        let s = radians.sin();
+        Vec2 {
+            x: self.x * c - self.y * s,
+            y: self.x * s + self.y * c,
+        }
+    }
+
+    pub fn perp(self) -> Vec2 {
+        Vec2 {
+            x: -self.y,
+            y: self.x,
+        }
+    }
 }
 
 impl Default for Vec2 {
