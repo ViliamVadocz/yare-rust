@@ -1,7 +1,7 @@
 use crate::{
     bindings::{
         base::{
-            CIRCLE_START_OFFSET, SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE, PRODUCTION_OFFSET
+            CIRCLE_START_OFFSET, SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE, PRODUCTION_OFFSET, DISRUPTION_RADIUS
         },
         game::MAX_GAME_LEN,
         outpost::NORMAL_RANGE,
@@ -130,7 +130,7 @@ impl<F: Fn(u32)> Headless<F> {
 
         
         for player in self.players.iter_mut() {
-            if player.base.energy >= player.base.spirit_cost {
+            if player.base.energy >= player.base.spirit_cost && !player.base.disrupted {
                 player.base.energy -= player.base.spirit_cost;
                 //dbg!(&player.base);
                 let spirit_id = player.spirits.len();
@@ -364,6 +364,12 @@ impl<F: Fn(u32)> Headless<F> {
 
             player.base.energy = player.base.energy.clamp(0, player.base.energy_cap);
             //dbg!(player.index, player.spirits.len(), player.base.energy);
+        }
+        for i in 0..self.players.len() {
+            let pos = self.players[i].base.pos;
+            let owner = self.players[i].base.player_id;
+            let disrupted = self.players.iter().filter(|x| x.index != i && x.spirits.iter().filter(|s| s.pos.dist(pos) <= DISRUPTION_RADIUS).count() > 0).count() > 0;
+            self.players[i].base.disrupted = disrupted;
         }
 
 
