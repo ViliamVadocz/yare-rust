@@ -1,7 +1,7 @@
 use crate::{
     bindings::{
         base::{
-            CIRCLE_START_OFFSET, SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE,
+            CIRCLE_START_OFFSET, SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE, PRODUCTION_OFFSET
         },
         game::MAX_GAME_LEN,
         outpost::NORMAL_RANGE,
@@ -118,6 +118,17 @@ impl<F: Fn(u32)> Headless<F> {
                     .collect(),
             );
             unsafe { COMMANDS = Vec::new() }
+        }
+
+        
+        for player in self.players.iter_mut() {
+            if player.base.energy >= player.base.spirit_cost {
+                player.base.energy -= player.base.spirit_cost;
+                let spirit_id = player.spirits.len();
+                let offset = &PRODUCTION_OFFSET[player.index];
+                let pos = player.base.pos + offset.into();
+                player.spirits.push(Spirit::new(player.index, player.shape, pos, spirit_id));
+            }
         }
 
         // TODO do game logic
@@ -270,6 +281,30 @@ impl<F: Fn(u32)> Headless<F> {
         // divide
 
         // jump
+
+        // update bases
+        for player in self.players.iter_mut() {
+            let mut living_spirits = 0;
+            for spirit in player.spirits.iter_mut() {
+                if spirit.energy < 0 {
+                    spirit.hp = 0
+                }
+                if spirit.hp > 0 {
+                    living_spirits += 1
+                }
+            }
+            player.base.spirit_cost = player.shape.spirit_cost(living_spirits);
+            if player.base.energy < 0 {
+                if player.base.hp == 1 {
+                    let winner = if player.index == 0 { 1 } else { 0 };
+                    return Some(Outcome::Victory(winner))
+                } else {
+                    player.base.hp -= 1
+                }
+                player.base.energy = 0
+            }
+        }
+
 
         self.tick += 1;
         if self.tick > MAX_GAME_LEN {

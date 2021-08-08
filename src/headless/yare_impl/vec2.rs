@@ -1,6 +1,7 @@
 use std::{
     cmp::Ordering,
     iter::Sum,
+    convert::From,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
@@ -16,6 +17,12 @@ pub type Pos = Vec2;
 
 impl From<&Position> for Vec2 {
     fn from(pos: &Position) -> Vec2 {
+        Vec2 { x: pos.x, y: pos.y }
+    }
+}
+
+impl From<Position> for Vec2 {
+    fn from(pos: Position) -> Vec2 {
         Vec2 { x: pos.x, y: pos.y }
     }
 }

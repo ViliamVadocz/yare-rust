@@ -17,11 +17,7 @@ pub(crate) struct Spirit {
 
 impl Spirit {
     pub fn new(player_id: usize, shape: Shape, pos: Pos, id: usize) -> Spirit {
-        let size = match &shape {
-            Shape::Circle => 1,
-            Shape::Square => 10,
-            Shape::Triangle => 3,
-        };
+        let size = shape.base_size();
         Spirit {
             energy_cap: size * 10,
             energy: size * 10,

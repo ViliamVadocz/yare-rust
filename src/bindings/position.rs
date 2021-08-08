@@ -8,6 +8,7 @@
 /// let pos = MyVectorStruct { x, y };
 /// ```
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct Position {
     /// Horizontal coordinate.
     pub x: f32,
