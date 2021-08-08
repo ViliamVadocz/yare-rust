@@ -29,6 +29,29 @@ pub(crate) enum Command {
     Explode { index: usize },
 }
 
+/*
+First, all energize() methods are calculated, then all movements, then all merge() and so on. Except for explode() that happens together with energize().
+energize, explode
+move
+merge
+divide
+jump
+*/
+impl Command {
+    fn priority(&self) -> usize {
+        match self {
+            Command::Energize{..} => 0,
+            Command::EnergizeBase{..} => 0,
+            Command::EnergizeOutpost{..} => 0,
+            Command::Explode{..} => 0,
+            Command::Goto{..} => 1,
+            Command::Merge{..} => 2,
+            Command::Divide{..} => 3,
+            Command::Jump{..} => 4,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub enum Shape {
     Circle,
@@ -59,7 +82,7 @@ pub(crate) struct Spirit {
 }
 
 impl Spirit {
-    fn new(player_id: usize, shape: Shape, pos: Pos) -> Spirit {
+    fn new(player_id: usize, shape: Shape, pos: Pos, id: usize) -> Spirit {
         let size = match &shape {
             Shape::Circle => 1,
             Shape::Square => 10,
@@ -69,7 +92,7 @@ impl Spirit {
             energy_cap: size * 10,
             energy: size * 10,
             hp: 1,
-            id: 0, // TODO get id of last created spirit
+            id: id, // TODO get id of last created spirit
             player_id,
             pos,
             shape,
@@ -77,16 +100,19 @@ impl Spirit {
         }
     }
 
-    fn game_start(player_id: usize, shape: &Shape) -> Vec<Spirit> {
+    fn game_start(player_id: usize, shape: &Shape, &mut spirits: &mut Vec<Spirit>) {
         // TODO Create spirits in starting positions.
         match shape {
-            Shape::Circle => CIRCLE_START_OFFSET[player_id]
-                .iter()
-                .map(|p| Spirit::new(player_id, *shape, p.into()))
-                .collect(),
+            Shape::Circle => { 
+                for p in CIRCLE_START_OFFSET[player_id]
+                .iter() {
+                    let id = spirits.len();
+                    spirits.push(Spirit::new(player_id, *shape, p.into(), id))
+                }
+            },
             Shape::Square => vec![],
             Shape::Triangle => vec![],
-        }
+        };
     }
 }
 
@@ -197,33 +223,39 @@ struct Player<F: Fn(u32)> {
     index: usize,
     func: F,
     shape: Shape,
-    base: Base,
-    spirits: Vec<Spirit>,
 }
 
 pub struct Headless<F: Fn(u32)> {
     players: Vec<Player<F>>,
     stars: Vec<Star>,
     outposts: Vec<Outpost>,
+    spirits: Vec<Spirit>,
+    bases: Vec<Base>,
     tick: u32,
 }
 
 impl<F: Fn(u32)> Headless<F> {
     pub fn init(bots: Vec<F>, shapes: Vec<Shape>) -> Self {
-        let players = bots
+        let mut players = Vec::new();
+        let mut spirits = Vec::new();
+        let mut bases = Vec::new();
+
+        for (index, (func, shape)) in bots
             .into_iter()
             .zip(shapes.into_iter())
-            .enumerate()
-            .map(|(index, (func, shape))| Player {
-                index,
-                func,
-                shape,
-                base: Base::game_start(index, &shape),
-                spirits: Spirit::game_start(index, &shape),
-            })
-            .collect();
+            .enumerate() {
+                players.push(Player {
+                    index,
+                    func,
+                    shape,
+                });
+                bases.push(Base::game_start(index, &shape));
+                Spirit::game_start(index, &shape, &mut spirits);
+        }
         Self {
             players,
+            spirits,
+            bases,
             stars: Star::game_start(),
             outposts: Outpost::game_start(),
             tick: 0,
@@ -231,21 +263,8 @@ impl<F: Fn(u32)> Headless<F> {
     }
 
     fn tick(&mut self) -> Option<Outcome> {
-        unsafe {
-            SPIRITS = self
-                .players
-                .iter()
-                .map(|player| player.spirits.clone())
-                .flatten()
-                .collect()
-        };
-        unsafe {
-            BASES = self
-                .players
-                .iter()
-                .map(|player| player.base.clone())
-                .collect()
-        };
+        unsafe { SPIRITS = self.spirits.clone() };
+        unsafe { BASES = self.bases.clone(); };
         unsafe { STARS = self.stars.clone() };
         unsafe { OUTPOSTS = self.outposts.clone() };
 
@@ -258,6 +277,73 @@ impl<F: Fn(u32)> Headless<F> {
         }
 
         // TODO do game logic
+
+        let mut charging_spirits = Vec::new();
+        // first update stars
+        for star in &mut self.stars {
+            charging_spirits.push(Vec::<usize>::new());
+            if star.energy < star.energy_cap {
+                let gain = (star.energy as f32 / 100.).round();
+                let new_energy = star.energy + 3 + gain as i32;
+                star.energy = new_energy.min(star.energy_cap);
+            }
+        }
+
+        // process energize/explode commands + outposts
+        for (player_i, player_commands) in all_commands.iter().enumerate() {
+            let player = &mut self.players[player_i];
+
+            // TODO: I think we need to track the change in each sprites energy that tick
+            // and apply it after all of the commands process
+            for command in player_commands.iter() {
+                match command {
+                    Command::Energize{index, target} => {
+                        let source_spirit = self.spirits[*index];
+                        let target_spirit = self.spirits[*target];
+                        if !source_spirit.hp > 0 {
+                            continue;
+                        }
+                        // self energize
+                        if index == target {
+                            for star in &self.stars {
+                                // check distance
+                            }
+                        } else {
+                            // charge friendly
+                            if source_spirit.player_id == target_spirit.player_id {
+
+                            // attack
+                            } else {
+
+                            }
+                        }
+                    },
+                    Command::EnergizeBase{index, target} => {
+
+                    },
+                    Command::EnergizeOutpost{index, target} => {
+
+                    },
+                    Command::Explode{index} => {
+
+                    },
+                    _ => ()
+                }
+            }
+        }
+
+        // TODO: Reconcile the energy differences, kill sprites with energy < 0? or do sprites that were attacked and went down to 0 also die
+
+
+        // move
+
+        // merge
+
+        // divide
+
+        // jump
+
+
         self.tick += 1;
         if self.tick > MAX_GAME_LEN {
             return Some(Outcome::Draw);
