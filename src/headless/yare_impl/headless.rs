@@ -66,6 +66,7 @@ impl<F: Fn(u32)> Headless<F> {
     }
 
     fn tick(&mut self) -> Option<Outcome> {
+        //dbg!(self.tick);
         let mut spirits: Vec<Spirit> = self
             .players
             .iter()
@@ -93,6 +94,7 @@ impl<F: Fn(u32)> Headless<F> {
                 .into_iter()
                 .enumerate()
                 .collect();
+            //dbg!(player_commands.len());
             player_commands.sort_by(|(a_i, a_command), (b_i, b_command)| {
                 // if the commands are for different spirits, sort by spirit index
                 if a_command.index() != b_command.index() {
@@ -110,6 +112,7 @@ impl<F: Fn(u32)> Headless<F> {
             player_commands.dedup_by(|(a_i, a_command), (b_i, b_command)| {
                 a_command.index() == b_command.index() && a_command.id() == b_command.id()
             });
+            //dbg!(player_commands.clone());
 
             all_commands.push(
                 player_commands
@@ -150,7 +153,8 @@ impl<F: Fn(u32)> Headless<F> {
                     Command::Energize { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_spirit = &spirits[*target];
-                        if !source_spirit.hp > 0 || player.index != source_spirit.player_id {
+                        if source_spirit.hp < 1 || player.index != source_spirit.player_id || source_spirit.pos.dist(target_spirit.pos) > ENERGIZE_RANGE {
+                            //dbg!(source_spirit);
                             continue;
                         }
                         // self energize
@@ -158,6 +162,7 @@ impl<F: Fn(u32)> Headless<F> {
                             for (i, star) in self.stars.iter().enumerate() {
                                 // check distance
                                 if star.pos.dist(source_spirit.pos) < ENERGIZE_RANGE {
+                                    //dbg!(source_spirit);
                                     charging_spirits[i].push(*index);
                                 }
                             }
@@ -176,22 +181,25 @@ impl<F: Fn(u32)> Headless<F> {
                     Command::EnergizeBase { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_base = &bases[*target];
-                        if !source_spirit.hp > 0 || player.index != source_spirit.player_id {
+                        if source_spirit.hp < 1 || player.index != source_spirit.player_id || source_spirit.pos.dist(target_base.pos) > ENERGIZE_RANGE {
+                            //dbg!(source_spirit);
                             continue;
                         }
                         spirit_energy_changes[*index] -= source_spirit.energize_amount();
                         if source_spirit.player_id == target_base.player_id {
                             // charging base
+                            //dbg!(source_spirit.energize_amount());
                             base_energy_changes[*target] += source_spirit.energize_amount();
                         } else {
                             // attacking enemy
+                            //dbg!(source_spirit.energize_amount());
                             base_energy_changes[*target] -= 2 * source_spirit.energize_amount();
                         }
                     }
                     Command::EnergizeOutpost { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_outpost = &self.outposts[*target];
-                        if !source_spirit.hp > 0 || player.index != source_spirit.player_id {
+                        if source_spirit.hp < 1 || player.index != source_spirit.player_id || source_spirit.pos.dist(target_outpost.pos) > ENERGIZE_RANGE{
                             continue;
                         }
                         spirit_energy_changes[*index] -= source_spirit.energize_amount();
@@ -207,7 +215,7 @@ impl<F: Fn(u32)> Headless<F> {
                     }
                     Command::Explode { index } => {
                         let source_spirit = &spirits[*index];
-                        if !source_spirit.hp > 0
+                        if source_spirit.hp < 1
                             || player.index != source_spirit.player_id
                             || source_spirit.shape != Shape::Triangle
                         {
@@ -217,7 +225,7 @@ impl<F: Fn(u32)> Headless<F> {
                         for (target, spirit) in spirits.iter().enumerate() {
                             if spirit.hp > 0
                                 && spirit.player_id != source_spirit.player_id
-                                && spirit.pos.dist(source_spirit.pos) < ENERGIZE_RANGE
+                                && spirit.pos.dist(source_spirit.pos) <= ENERGIZE_RANGE
                             {
                                 spirit_energy_changes[target] -= EXPLODE_DAMAGE;
                             }
@@ -234,7 +242,15 @@ impl<F: Fn(u32)> Headless<F> {
             let spirit_copy = &spirits[i];
             let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
             spirit.energy += delta;
-            spirit_energy_changes[i] = 0;
+        }
+
+        for i in 0..base_energy_changes.len() {
+            let delta = base_energy_changes[i];
+            //dbg!(delta);
+            let base_copy = &bases[i];
+            let base = &mut self.players[base_copy.player_id].base;
+            base.energy += delta;
+            //dbg!(base);
         }
 
         // process charging from stars
@@ -250,6 +266,7 @@ impl<F: Fn(u32)> Headless<F> {
                 star.energy -= amount;
                 spirit.energy += amount;
             }
+            star.energy = star.energy.min(star.energy_cap);
         }
 
         // kill sprites with energy < 0
@@ -270,6 +287,10 @@ impl<F: Fn(u32)> Headless<F> {
                             &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
                         let dist = spirit.pos.dist(*target).min(MOVEMENT_SPEED);
                         spirit.pos = spirit.pos.towards(*target, dist);
+                        if *index == 1 {
+                            //dbg!(spirit_copy);
+                            //dbg!(spirit);
+                        }
                     }
                     _ => (),
                 }
@@ -292,6 +313,7 @@ impl<F: Fn(u32)> Headless<F> {
                 if spirit.hp > 0 {
                     living_spirits += 1
                 }
+                spirit.energy = spirit.energy.clamp(0, spirit.energy_cap)
             }
             player.base.spirit_cost = player.shape.spirit_cost(living_spirits);
             if player.base.energy < 0 {
@@ -303,6 +325,9 @@ impl<F: Fn(u32)> Headless<F> {
                 }
                 player.base.energy = 0
             }
+
+            player.base.energy = player.base.energy.clamp(0, player.base.energy_cap);
+            //dbg!(player.index, player.spirits.len(), player.base.energy);
         }
 
 
@@ -314,10 +339,10 @@ impl<F: Fn(u32)> Headless<F> {
         None
     }
 
-    pub fn simulate(mut self) -> Outcome {
+    pub fn simulate(mut self) -> (u32, Outcome) {
         loop {
             if let Some(outcome) = self.tick() {
-                return outcome;
+                return (self.tick, outcome);
             }
         }
     }
