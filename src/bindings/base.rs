@@ -56,11 +56,11 @@ pub const SQUARE_START_OFFSET: [&[Position]; 2] = [
         Position { x: -220., y: -100. },
         Position { x: -200., y: -100. },
     ],
-    &[    
+    &[
         Position { x: 240., y: 100. },
         Position { x: 220., y: 100. },
         Position { x: 200., y: 100. },
-    ]
+    ],
 ];
 
 /// Spirit start offset from base for triangles.
@@ -73,14 +73,14 @@ pub const TRIANGLE_START_OFFSET: [&[Position]; 2] = [
         Position { x: -160., y: -100. },
         Position { x: -140., y: -100. },
     ],
-    &[ 
-        Position { x: 240., y: 100.},
-        Position { x: 220., y: 100.},
-        Position { x: 200., y: 100.},
-        Position { x: 180., y: 100.},
-        Position { x: 160., y: 100.},
-        Position { x: 140., y: 100.}
-    ]
+    &[
+        Position { x: 240., y: 100. },
+        Position { x: 220., y: 100. },
+        Position { x: 200., y: 100. },
+        Position { x: 180., y: 100. },
+        Position { x: 160., y: 100. },
+        Position { x: 140., y: 100. },
+    ],
 ];
 
 #[link(wasm_import_module = "bases")]
