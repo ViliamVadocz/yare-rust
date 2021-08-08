@@ -32,7 +32,7 @@ Put this in your `Cargo.toml`.
 crate-type = ["cdylib"]
 
 [dependencies]
-yareio = "0.1.0"
+yareio = "0.1.1"
 
 [profile.release]
 opt-level = "s"
