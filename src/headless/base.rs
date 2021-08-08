@@ -1,6 +1,8 @@
 pub use crate::bindings::{
     base::{
         CIRCLE_START_OFFSET,
+        SQUARE_START_OFFSET,
+        TRIANGLE_START_OFFSET,
         DISRUPTION_RADIUS,
         PRODUCTION_OFFSET,
         SPIRIT_COSTS_CIRCLE,
