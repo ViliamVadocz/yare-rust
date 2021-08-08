@@ -1,11 +1,18 @@
-use crate::bindings::{
-    base::{CIRCLE_START_OFFSET, SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE},
-    game::MAX_GAME_LEN,
-    outpost::NORMAL_RANGE,
-    position::Position,
-    star::next_energy,
+use crate::{
+    bindings::{
+        base::{
+            CIRCLE_START_OFFSET,
+            SPIRIT_COSTS_CIRCLE,
+            SPIRIT_COSTS_SQUARE,
+            SPIRIT_COSTS_TRIANGLE,
+        },
+        game::MAX_GAME_LEN,
+        outpost::NORMAL_RANGE,
+        position::Position,
+        star::next_energy,
+    },
+    yare_impl::*,
 };
-use crate::yare_impl::*;
 
 #[derive(Clone, Debug)]
 pub enum Outcome {
@@ -60,23 +67,19 @@ impl<F: Fn(u32)> Headless<F> {
 
     fn tick(&mut self) -> Option<Outcome> {
         let mut spirits: Vec<Spirit> = self
-        .players
-        .iter()
-        .map(|player| player.spirits.clone())
-        .flatten()
-        .collect();
-        unsafe {
-            SPIRITS = spirits.clone()
-        };
-        
+            .players
+            .iter()
+            .map(|player| player.spirits.clone())
+            .flatten()
+            .collect();
+        unsafe { SPIRITS = spirits.clone() };
+
         let mut bases: Vec<Base> = self
-        .players
-        .iter()
-        .map(|player| player.base.clone())
-        .collect();
-        unsafe {
-            BASES = bases.clone()
-        };
+            .players
+            .iter()
+            .map(|player| player.base.clone())
+            .collect();
+        unsafe { BASES = bases.clone() };
         unsafe { STARS = self.stars.clone() };
         unsafe { OUTPOSTS = self.outposts.clone() };
 
@@ -107,7 +110,7 @@ impl<F: Fn(u32)> Headless<F> {
             // and apply it after all of the commands process
             for command in player_commands.iter() {
                 match command {
-                    Command::Energize{index, target} => {
+                    Command::Energize { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_spirit = &spirits[*target];
                         if !source_spirit.hp > 0 || player.index != source_spirit.player_id {
@@ -122,28 +125,21 @@ impl<F: Fn(u32)> Headless<F> {
                             // charge friendly
                             if source_spirit.player_id == target_spirit.player_id {
 
-                            // attack
+                                // attack
                             } else {
-
                             }
                         }
-                    },
-                    Command::EnergizeBase{index, target} => {
-
-                    },
-                    Command::EnergizeOutpost{index, target} => {
-
-                    },
-                    Command::Explode{index} => {
-
-                    },
-                    _ => ()
+                    }
+                    Command::EnergizeBase { index, target } => {}
+                    Command::EnergizeOutpost { index, target } => {}
+                    Command::Explode { index } => {}
+                    _ => (),
                 }
             }
         }
 
-        // TODO: Reconcile the energy differences, kill sprites with energy < 0? or do sprites that were attacked and went down to 0 also die
-
+        // TODO: Reconcile the energy differences, kill sprites with energy < 0? or do
+        // sprites that were attacked and went down to 0 also die
 
         // move
 
@@ -152,7 +148,6 @@ impl<F: Fn(u32)> Headless<F> {
         // divide
 
         // jump
-
 
         self.tick += 1;
         if self.tick > MAX_GAME_LEN {

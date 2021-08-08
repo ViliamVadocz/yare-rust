@@ -1,5 +1,7 @@
-use crate::yare_impl::{Shape, Pos};
-use crate::bindings::base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE};
+use crate::{
+    bindings::base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE},
+    yare_impl::{Pos, Shape},
+};
 
 #[derive(Clone, Debug)]
 pub(crate) struct Base {

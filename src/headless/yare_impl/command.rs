@@ -12,25 +12,24 @@ pub(crate) enum Command {
     Explode { index: usize },
 }
 
-/*
-First, all energize() methods are calculated, then all movements, then all merge() and so on. Except for explode() that happens together with energize().
-energize, explode
-move
-merge
-divide
-jump
-*/
+// First, all energize() methods are calculated, then all movements, then all
+// merge() and so on. Except for explode() that happens together with
+// energize(). energize, explode
+// move
+// merge
+// divide
+// jump
 impl Command {
     fn priority(&self) -> usize {
         match self {
-            Command::Energize{..} => 0,
-            Command::EnergizeBase{..} => 0,
-            Command::EnergizeOutpost{..} => 0,
-            Command::Explode{..} => 0,
-            Command::Goto{..} => 1,
-            Command::Merge{..} => 2,
-            Command::Divide{..} => 3,
-            Command::Jump{..} => 4,
+            Command::Energize { .. } => 0,
+            Command::EnergizeBase { .. } => 0,
+            Command::EnergizeOutpost { .. } => 0,
+            Command::Explode { .. } => 0,
+            Command::Goto { .. } => 1,
+            Command::Merge { .. } => 2,
+            Command::Divide { .. } => 3,
+            Command::Jump { .. } => 4,
         }
     }
 }

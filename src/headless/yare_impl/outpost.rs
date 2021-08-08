@@ -1,5 +1,4 @@
-use crate::yare_impl::Pos;
-use crate::bindings::outpost::NORMAL_RANGE;
+use crate::{bindings::outpost::NORMAL_RANGE, yare_impl::Pos};
 
 #[derive(Clone, Debug)]
 pub(crate) struct Outpost {

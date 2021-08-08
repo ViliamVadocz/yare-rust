@@ -1,5 +1,7 @@
-use crate::yare_impl::{Pos, Shape};
-use crate::bindings::base::CIRCLE_START_OFFSET;
+use crate::{
+    bindings::base::CIRCLE_START_OFFSET,
+    yare_impl::{Pos, Shape},
+};
 
 #[derive(Clone, Debug)]
 pub(crate) struct Spirit {
@@ -24,7 +26,7 @@ impl Spirit {
             energy_cap: size * 10,
             energy: size * 10,
             hp: 1,
-            id: id, // TODO get id of last created spirit
+            id, // TODO get id of last created spirit
             player_id,
             pos,
             shape,
