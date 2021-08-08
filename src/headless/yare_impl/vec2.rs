@@ -49,6 +49,10 @@ impl Vec2 {
         (self - other).norm_squared()
     }
 
+    pub fn dist(self, other: Vec2) -> f32 {
+        self.dist_squared(other).sqrt()
+    }
+
     pub fn in_range(self, other: Vec2, range: f32) -> bool {
         (self - other) < range
     }

@@ -46,4 +46,12 @@ impl Spirit {
             Shape::Triangle => vec![],
         }
     }
+
+    pub fn energize_amount(&self) -> i32 {
+        self.size.min(self.energy)
+    }
+
+    pub fn energize_self_amount(&self) -> i32 {
+        self.size.min(self.energy_cap - self.energy)
+    }
 }

@@ -4,11 +4,7 @@ pub use crate::bindings::{
     id::Id,
     position::Position,
     spirit::{
-        ENERGIZE_RANGE,
-        EXPLODE_DAMAGE,
-        EXPLODE_RADIUS,
-        JUMP_COST_PER_DIST,
-        MERGE_DISTANCE,
+        ENERGIZE_RANGE, EXPLODE_DAMAGE, EXPLODE_RADIUS, JUMP_COST_PER_DIST, MERGE_DISTANCE,
         MOVEMENT_SPEED,
     },
 };
