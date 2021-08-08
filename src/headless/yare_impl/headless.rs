@@ -368,7 +368,7 @@ impl<F: Fn(u32)> Headless<F> {
         for i in 0..self.players.len() {
             let pos = self.players[i].base.pos;
             let owner = self.players[i].base.player_id;
-            let disrupted = self.players.iter().filter(|x| x.index != i && x.spirits.iter().filter(|s| s.pos.dist(pos) <= DISRUPTION_RADIUS).count() > 0).count() > 0;
+            let disrupted = self.players.iter().filter(|x| x.index != i && x.spirits.iter().filter(|s| s.hp > 0 && s.pos.dist(pos) <= DISRUPTION_RADIUS).count() > 0).count() > 0;
             self.players[i].base.disrupted = disrupted;
         }
 
