@@ -29,11 +29,11 @@ impl From<Position> for Vec2 {
 
 impl Vec2 {
     pub fn dot(self, other: Vec2) -> f32 {
-        self.x * other.x + self.y * other.y
+        (self.x * other.x) + (self.y * other.y)
     }
 
     pub fn norm_squared(self) -> f32 {
-        self.x * self.x + self.y * self.y
+        (self.x * self.x) + (self.y * self.y)
     }
 
     pub fn norm(self) -> f32 {
@@ -41,6 +41,10 @@ impl Vec2 {
     }
 
     pub fn normalize(self) -> Vec2 {
+        let norm = self.norm();
+        if norm == 0.0 {
+          return Vec2 { x: 1., y: 0. }
+        }
         self / self.norm()
     }
 
@@ -49,7 +53,7 @@ impl Vec2 {
     }
 
     pub fn lerp(self, other: Vec2, ratio: f32) -> Vec2 {
-        self * ratio + other * (1. - ratio)
+        (self * ratio) + (other * (1. - ratio))
     }
 
     pub fn dist_squared(self, other: Vec2) -> f32 {
@@ -65,7 +69,7 @@ impl Vec2 {
     }
 
     pub fn towards(self, other: Vec2, length: f32) -> Vec2 {
-        self + (other - self).normalize() * length
+        self + ((other - self).normalize() * length)
     }
 
     pub fn rotated(self, radians: f32) -> Vec2 {

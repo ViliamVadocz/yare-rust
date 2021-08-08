@@ -13,6 +13,9 @@ use crate::{
 };
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use serde::{Serialize, Deserialize};
+use std::fs::File;
+use std::io::prelude::*;
 
 #[derive(Clone, Debug)]
 pub enum Outcome {
@@ -41,6 +44,7 @@ pub struct Headless<F: Fn(u32)> {
     stars: Vec<Star>,
     outposts: Vec<Outpost>,
     tick: u32,
+    replay: Vec<ReplayTick>
 }
 
 impl<F: Fn(u32)> Headless<F> {
@@ -62,6 +66,7 @@ impl<F: Fn(u32)> Headless<F> {
             stars: Star::game_start(),
             outposts: Outpost::game_start(),
             tick: 0,
+            replay: Vec::new()
         }
     }
 
@@ -127,6 +132,7 @@ impl<F: Fn(u32)> Headless<F> {
         for player in self.players.iter_mut() {
             if player.base.energy >= player.base.spirit_cost {
                 player.base.energy -= player.base.spirit_cost;
+                //dbg!(&player.base);
                 let spirit_id = player.spirits.len();
                 let offset = &PRODUCTION_OFFSET[player.index];
                 let pos = player.base.pos + offset.into();
@@ -143,6 +149,9 @@ impl<F: Fn(u32)> Headless<F> {
             vec![vec![0 as i32; self.players.len()]; self.outposts.len()];
 
         // process energize/explode commands + outposts
+
+        let mut energizes: Vec<ReplayEnergize> = Vec::new();
+
         for (player_i, player_commands) in all_commands.iter().enumerate() {
             let player = &mut self.players[player_i];
 
@@ -168,6 +177,7 @@ impl<F: Fn(u32)> Headless<F> {
                             }
                         } else {
                             // charge friendly
+                            energizes.push(ReplayEnergize::spirit_to_spirit(source_spirit, target_spirit));
                             spirit_energy_changes[*index] -= source_spirit.energize_amount();
                             if source_spirit.player_id == target_spirit.player_id {
                                 spirit_energy_changes[*target] += source_spirit.energize_amount();
@@ -186,13 +196,14 @@ impl<F: Fn(u32)> Headless<F> {
                             continue;
                         }
                         spirit_energy_changes[*index] -= source_spirit.energize_amount();
+                        energizes.push(ReplayEnergize::spirit_to_base(source_spirit, target_base));
                         if source_spirit.player_id == target_base.player_id {
                             // charging base
-                            //dbg!(source_spirit.energize_amount());
+                            //dbg!(source_spirit, target_base);
                             base_energy_changes[*target] += source_spirit.energize_amount();
                         } else {
                             // attacking enemy
-                            //dbg!(source_spirit.energize_amount());
+                            //dbg!(source_spirit, target_base);
                             base_energy_changes[*target] -= 2 * source_spirit.energize_amount();
                         }
                     }
@@ -202,6 +213,8 @@ impl<F: Fn(u32)> Headless<F> {
                         if source_spirit.hp < 1 || player.index != source_spirit.player_id || source_spirit.pos.dist(target_outpost.pos) > ENERGIZE_RANGE{
                             continue;
                         }
+                        
+                        energizes.push(ReplayEnergize::spirit_to_outpost(source_spirit, target_outpost));
                         spirit_energy_changes[*index] -= source_spirit.energize_amount();
                         if target_outpost.player_id == source_spirit.player_id
                             || target_outpost.energy == 0
@@ -256,17 +269,23 @@ impl<F: Fn(u32)> Headless<F> {
         // process charging from stars
         for i in 0..self.stars.len() {
             let star = &mut self.stars[i];
-            star.energy = next_energy(star.energy);
+            if star.active_at <= self.tick {
+                star.energy = next_energy(star.energy);
+            }
             let indices = &mut charging_spirits[i];
             indices.shuffle(&mut thread_rng());
             for index in indices {
-                let spirit_copy = &spirits[i];
+                let spirit_copy = &spirits[*index];
                 let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
                 let amount = star.energy.min(spirit.energize_self_amount());
+                if amount > 0 {
+                    energizes.push(ReplayEnergize::from_star(i, &spirit))
+                }
                 star.energy -= amount;
                 spirit.energy += amount;
             }
             star.energy = star.energy.min(star.energy_cap);
+            //dbg!(star);
         }
 
         // kill sprites with energy < 0
@@ -303,6 +322,22 @@ impl<F: Fn(u32)> Headless<F> {
 
         // jump
 
+
+
+        self.replay.push(ReplayTick {
+            t: self.tick,
+            p1: self.players[0].spirits.iter().filter(|s| s.hp > 0).map(|s| s.into()).collect(),
+            p2: self.players[1].spirits.iter().filter(|s| s.hp > 0).map(|s| s.into()).collect(),
+            b1: (&self.players[0].base).into(),
+            b2: (&self.players[1].base).into(),
+            ou: (&self.outposts[0]).into(),
+            e: energizes,
+            s: Vec::new(),
+            g1: Vec::new(),
+            g2: Vec::new(),
+            st: ReplayStars::new(self.stars[0].energy, self.stars[1].energy, self.stars[2].energy)
+        });
+
         // update bases
         for player in self.players.iter_mut() {
             let mut living_spirits = 0;
@@ -317,6 +352,7 @@ impl<F: Fn(u32)> Headless<F> {
             }
             player.base.spirit_cost = player.shape.spirit_cost(living_spirits);
             if player.base.energy < 0 {
+                //dbg!(&player.base);
                 if player.base.hp == 1 {
                     let winner = if player.index == 0 { 1 } else { 0 };
                     return Some(Outcome::Victory(winner))
@@ -342,6 +378,9 @@ impl<F: Fn(u32)> Headless<F> {
     pub fn simulate(mut self) -> (u32, Outcome) {
         loop {
             if let Some(outcome) = self.tick() {
+                let replay = serde_json::to_string(&self.replay).unwrap();
+                let mut file = File::create("replay.json").unwrap();
+                file.write_all(replay.as_bytes()).unwrap();
                 return (self.tick, outcome);
             }
         }
