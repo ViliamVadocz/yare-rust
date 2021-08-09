@@ -17,6 +17,16 @@ impl From<Shape> for usize {
     }
 }
 
+impl From<usize> for Shape {
+    fn from(shape: usize) -> Shape {
+        match shape {
+            0 => Shape::Circle,
+            1 => Shape::Square,
+            _ => Shape::Triangle,
+        }
+    }
+}
+
 impl Shape {
     pub fn spirit_cost(&self, current_count: usize) -> i32 {
         let costs = match self {

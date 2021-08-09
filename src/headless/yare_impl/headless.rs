@@ -1,7 +1,17 @@
+use std::{fs::File, io::prelude::*};
+
+use rand::{seq::SliceRandom, thread_rng};
+use serde::{Deserialize, Serialize};
+
 use crate::{
     bindings::{
         base::{
-            CIRCLE_START_OFFSET, SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE, PRODUCTION_OFFSET, DISRUPTION_RADIUS
+            CIRCLE_START_OFFSET,
+            DISRUPTION_RADIUS,
+            PRODUCTION_OFFSET,
+            SPIRIT_COSTS_CIRCLE,
+            SPIRIT_COSTS_SQUARE,
+            SPIRIT_COSTS_TRIANGLE,
         },
         game::MAX_GAME_LEN,
         outpost::NORMAL_RANGE,
@@ -11,11 +21,6 @@ use crate::{
     },
     yare_impl::*,
 };
-use rand::seq::SliceRandom;
-use rand::thread_rng;
-use serde::{Serialize, Deserialize};
-use std::fs::File;
-use std::io::prelude::*;
 
 #[derive(Clone, Debug)]
 pub enum Outcome {
@@ -31,29 +36,32 @@ pub(crate) static mut OUTPOSTS: Vec<Outpost> = Vec::new();
 pub(crate) static mut ME: usize = 0;
 pub(crate) static mut PLAYER_NUM: usize = 2;
 
-struct Player<F: Fn(u32)> {
+struct Player<'a, F: Fn(u32)> {
     index: usize,
-    func: F,
+    func: &'a F,
     shape: Shape,
     base: Base,
     spirits: Vec<Spirit>,
 }
 
-pub struct Headless<F: Fn(u32)> {
-    players: Vec<Player<F>>,
+pub struct Headless<'a, F: Fn(u32)> {
+    players: Vec<Player<'a, F>>,
     stars: Vec<Star>,
     outposts: Vec<Outpost>,
     tick: u32,
-    replay: Vec<ReplayTick>
+    replay: Vec<ReplayTick>,
 }
 
-impl<F: Fn(u32)> Headless<F> {
-    pub fn init(bots: Vec<F>, shapes: Vec<Shape>) -> Self {
+#[repr(C)]
+pub struct SimulationResult(u32, Outcome);
+
+impl<'a, F: Fn(u32)> Headless<'a, F> {
+    pub fn init(bots: &'a [F], shapes: &[Shape]) -> Self {
         let players = bots
             .into_iter()
             .zip(shapes.into_iter())
             .enumerate()
-            .map(|(index, (func, shape))| Player {
+            .map(|(index, (func, &shape))| Player {
                 index,
                 func,
                 shape,
@@ -66,12 +74,12 @@ impl<F: Fn(u32)> Headless<F> {
             stars: Star::game_start(),
             outposts: Outpost::game_start(),
             tick: 0,
-            replay: Vec::new()
+            replay: Vec::new(),
         }
     }
 
-    fn tick(&mut self) -> Option<Outcome> {
-        //dbg!(self.tick);
+    pub fn tick(&mut self) -> Option<Outcome> {
+        // dbg!(self.tick);
         let mut spirits: Vec<Spirit> = self
             .players
             .iter()
@@ -94,12 +102,13 @@ impl<F: Fn(u32)> Headless<F> {
             unsafe { ME = player.index };
             (player.func)(self.tick);
 
-            // sort commands by spirit, and then by command, and dedup to the last command issued
+            // sort commands by spirit, and then by command, and dedup to the last command
+            // issued
             let mut player_commands: Vec<(usize, Command)> = unsafe { COMMANDS.clone() }
                 .into_iter()
                 .enumerate()
                 .collect();
-            //dbg!(player_commands.len());
+            // dbg!(player_commands.len());
             player_commands.sort_by(|(a_i, a_command), (b_i, b_command)| {
                 // if the commands are for different spirits, sort by spirit index
                 if a_command.index() != b_command.index() {
@@ -113,34 +122,34 @@ impl<F: Fn(u32)> Headless<F> {
                 // sort the index of the command first
                 return b_i.cmp(&a_i);
             });
-            // drop all duplicate commands except for the last one submitted for that spirit/command
+            // drop all duplicate commands except for the last one submitted for that
+            // spirit/command
             player_commands.dedup_by(|(a_i, a_command), (b_i, b_command)| {
                 a_command.index() == b_command.index() && a_command.id() == b_command.id()
             });
-            //dbg!(player_commands.clone());
+            // dbg!(player_commands.clone());
 
             all_commands.push(
                 player_commands
                     .into_iter()
-                    .map(|(i, command)| command)
+                    .map(|(_i, command)| command)
                     .collect(),
             );
             unsafe { COMMANDS = Vec::new() }
         }
 
-        
         for player in self.players.iter_mut() {
             if player.base.energy >= player.base.spirit_cost && !player.base.disrupted {
                 player.base.energy -= player.base.spirit_cost;
-                //dbg!(&player.base);
+                // dbg!(&player.base);
                 let spirit_id = player.spirits.len();
                 let offset = &PRODUCTION_OFFSET[player.index];
                 let pos = player.base.pos + offset.into();
-                player.spirits.push(Spirit::new(player.index, player.shape, pos, spirit_id));
+                player
+                    .spirits
+                    .push(Spirit::new(player.index, player.shape, pos, spirit_id));
             }
         }
-
-        // TODO do game logic
 
         let mut charging_spirits = vec![vec![0; 0]; self.stars.len()];
         let mut spirit_energy_changes = vec![0 as i32; spirits.len()];
@@ -155,15 +164,16 @@ impl<F: Fn(u32)> Headless<F> {
         for (player_i, player_commands) in all_commands.iter().enumerate() {
             let player = &mut self.players[player_i];
 
-            // TODO: I think we need to track the change in each sprites energy that tick
-            // and apply it after all of the commands process
             for command in player_commands.iter() {
                 match command {
                     Command::Energize { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_spirit = &spirits[*target];
-                        if source_spirit.hp < 1 || player.index != source_spirit.player_id || source_spirit.pos.dist(target_spirit.pos) > ENERGIZE_RANGE {
-                            //dbg!(source_spirit);
+                        if source_spirit.hp < 1
+                            || player.index != source_spirit.player_id
+                            || source_spirit.pos.dist(target_spirit.pos) > ENERGIZE_RANGE
+                        {
+                            // dbg!(source_spirit);
                             continue;
                         }
                         // self energize
@@ -171,13 +181,16 @@ impl<F: Fn(u32)> Headless<F> {
                             for (i, star) in self.stars.iter().enumerate() {
                                 // check distance
                                 if star.pos.dist(source_spirit.pos) < ENERGIZE_RANGE {
-                                    //dbg!(source_spirit);
+                                    // dbg!(source_spirit);
                                     charging_spirits[i].push(*index);
                                 }
                             }
                         } else {
                             // charge friendly
-                            energizes.push(ReplayEnergize::spirit_to_spirit(source_spirit, target_spirit));
+                            energizes.push(ReplayEnergize::spirit_to_spirit(
+                                source_spirit,
+                                target_spirit,
+                            ));
                             spirit_energy_changes[*index] -= source_spirit.energize_amount();
                             if source_spirit.player_id == target_spirit.player_id {
                                 spirit_energy_changes[*target] += source_spirit.energize_amount();
@@ -191,30 +204,39 @@ impl<F: Fn(u32)> Headless<F> {
                     Command::EnergizeBase { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_base = &bases[*target];
-                        if source_spirit.hp < 1 || player.index != source_spirit.player_id || source_spirit.pos.dist(target_base.pos) > ENERGIZE_RANGE {
-                            //dbg!(source_spirit);
+                        if source_spirit.hp < 1
+                            || player.index != source_spirit.player_id
+                            || source_spirit.pos.dist(target_base.pos) > ENERGIZE_RANGE
+                        {
+                            // dbg!(source_spirit);
                             continue;
                         }
                         spirit_energy_changes[*index] -= source_spirit.energize_amount();
                         energizes.push(ReplayEnergize::spirit_to_base(source_spirit, target_base));
                         if source_spirit.player_id == target_base.player_id {
                             // charging base
-                            //dbg!(source_spirit, target_base);
+                            // dbg!(source_spirit, target_base);
                             base_energy_changes[*target] += source_spirit.energize_amount();
                         } else {
                             // attacking enemy
-                            //dbg!(source_spirit, target_base);
+                            // dbg!(source_spirit, target_base);
                             base_energy_changes[*target] -= 2 * source_spirit.energize_amount();
                         }
                     }
                     Command::EnergizeOutpost { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_outpost = &self.outposts[*target];
-                        if source_spirit.hp < 1 || player.index != source_spirit.player_id || source_spirit.pos.dist(target_outpost.pos) > ENERGIZE_RANGE{
+                        if source_spirit.hp < 1
+                            || player.index != source_spirit.player_id
+                            || source_spirit.pos.dist(target_outpost.pos) > ENERGIZE_RANGE
+                        {
                             continue;
                         }
-                        
-                        energizes.push(ReplayEnergize::spirit_to_outpost(source_spirit, target_outpost));
+
+                        energizes.push(ReplayEnergize::spirit_to_outpost(
+                            source_spirit,
+                            target_outpost,
+                        ));
                         spirit_energy_changes[*index] -= source_spirit.energize_amount();
                         if target_outpost.player_id == source_spirit.player_id
                             || target_outpost.energy == 0
@@ -249,6 +271,60 @@ impl<F: Fn(u32)> Headless<F> {
             }
         }
 
+        for i in 0..self.outposts.len() {
+            let outpost = &mut self.outposts[i];
+            if outpost.energy > 0 {
+                // attack a single random nearby spirit
+                let mut nearby_spirits: Vec<(usize, &Spirit)> = spirits
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, s)| {
+                        s.hp > 0
+                            && s.player_id != outpost.player_id
+                            && s.pos.dist(outpost.pos) <= outpost.get_range()
+                    })
+                    .collect();
+                if nearby_spirits.len() > 0 {
+                    nearby_spirits.shuffle(&mut thread_rng());
+                    let target = nearby_spirits[0].0;
+                    let attack = outpost.get_attack_energy();
+                    outpost.energy -= attack;
+                    spirit_energy_changes[target] -= 2 * attack;
+
+                    energizes.push(ReplayEnergize::outpost_to_spirit(
+                        outpost,
+                        &nearby_spirits[0].1,
+                    ))
+                }
+            }
+            let deltas = &outpost_energy_changes[i];
+            if outpost.energy == 0 {
+                // players fight for control
+                let mut largest_i = 0;
+                let mut largest = 0;
+                let mut other_sum = 0;
+                for (i, &delta) in deltas.iter().enumerate() {
+                    if delta > largest {
+                        other_sum += largest;
+                        largest = delta;
+                        largest_i = i;
+                    } else {
+                        other_sum += delta;
+                    }
+                }
+                if largest > other_sum {
+                    outpost.energy = largest - other_sum;
+                    outpost.player_id = largest_i;
+                }
+            } else {
+                // players attack
+                for delta in deltas {
+                    outpost.energy += delta;
+                }
+            }
+            outpost.energy = outpost.energy.clamp(0, outpost.energy_cap);
+        }
+
         // Apply all energy changes to spirits bases and outposts
         for i in 0..spirit_energy_changes.len() {
             let delta = spirit_energy_changes[i];
@@ -259,11 +335,9 @@ impl<F: Fn(u32)> Headless<F> {
 
         for i in 0..base_energy_changes.len() {
             let delta = base_energy_changes[i];
-            //dbg!(delta);
             let base_copy = &bases[i];
             let base = &mut self.players[base_copy.player_id].base;
             base.energy += delta;
-            //dbg!(base);
         }
 
         // process charging from stars
@@ -285,18 +359,13 @@ impl<F: Fn(u32)> Headless<F> {
                 spirit.energy += amount;
             }
             star.energy = star.energy.min(star.energy_cap);
-            //dbg!(star);
         }
-
-        // kill sprites with energy < 0
 
         // move
 
         for (player_i, player_commands) in all_commands.iter().enumerate() {
             let player = &mut self.players[player_i];
 
-            // TODO: I think we need to track the change in each sprites energy that tick
-            // and apply it after all of the commands process
             for command in player_commands.iter() {
                 match command {
                     Command::Goto { index, target } => {
@@ -306,10 +375,6 @@ impl<F: Fn(u32)> Headless<F> {
                             &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
                         let dist = spirit.pos.dist(*target).min(MOVEMENT_SPEED);
                         spirit.pos = spirit.pos.towards(*target, dist);
-                        if *index == 1 {
-                            //dbg!(spirit_copy);
-                            //dbg!(spirit);
-                        }
                     }
                     _ => (),
                 }
@@ -322,12 +387,20 @@ impl<F: Fn(u32)> Headless<F> {
 
         // jump
 
-
-
         self.replay.push(ReplayTick {
             t: self.tick,
-            p1: self.players[0].spirits.iter().filter(|s| s.hp > 0).map(|s| s.into()).collect(),
-            p2: self.players[1].spirits.iter().filter(|s| s.hp > 0).map(|s| s.into()).collect(),
+            p1: self.players[0]
+                .spirits
+                .iter()
+                .filter(|s| s.hp > 0)
+                .map(|s| s.into())
+                .collect(),
+            p2: self.players[1]
+                .spirits
+                .iter()
+                .filter(|s| s.hp > 0)
+                .map(|s| s.into())
+                .collect(),
             b1: (&self.players[0].base).into(),
             b2: (&self.players[1].base).into(),
             ou: (&self.outposts[0]).into(),
@@ -335,10 +408,15 @@ impl<F: Fn(u32)> Headless<F> {
             s: Vec::new(),
             g1: Vec::new(),
             g2: Vec::new(),
-            st: ReplayStars::new(self.stars[0].energy, self.stars[1].energy, self.stars[2].energy)
+            st: ReplayStars::new(
+                self.stars[0].energy,
+                self.stars[1].energy,
+                self.stars[2].energy,
+            ),
         });
 
         // update bases
+        // kill sprites with energy < 0
         for player in self.players.iter_mut() {
             let mut living_spirits = 0;
             for spirit in player.spirits.iter_mut() {
@@ -352,10 +430,9 @@ impl<F: Fn(u32)> Headless<F> {
             }
             player.base.spirit_cost = player.shape.spirit_cost(living_spirits);
             if player.base.energy < 0 {
-                //dbg!(&player.base);
                 if player.base.hp == 1 {
                     let winner = if player.index == 0 { 1 } else { 0 };
-                    return Some(Outcome::Victory(winner))
+                    return Some(Outcome::Victory(winner));
                 } else {
                     player.base.hp -= 1
                 }
@@ -363,15 +440,25 @@ impl<F: Fn(u32)> Headless<F> {
             }
 
             player.base.energy = player.base.energy.clamp(0, player.base.energy_cap);
-            //dbg!(player.index, player.spirits.len(), player.base.energy);
         }
         for i in 0..self.players.len() {
             let pos = self.players[i].base.pos;
             let owner = self.players[i].base.player_id;
-            let disrupted = self.players.iter().filter(|x| x.index != i && x.spirits.iter().filter(|s| s.hp > 0 && s.pos.dist(pos) <= DISRUPTION_RADIUS).count() > 0).count() > 0;
+            let disrupted = self
+                .players
+                .iter()
+                .filter(|x| {
+                    x.index != i
+                        && x.spirits
+                            .iter()
+                            .filter(|s| s.hp > 0 && s.pos.dist(pos) <= DISRUPTION_RADIUS)
+                            .count()
+                            > 0
+                })
+                .count()
+                > 0;
             self.players[i].base.disrupted = disrupted;
         }
-
 
         self.tick += 1;
         if self.tick > MAX_GAME_LEN {
@@ -381,14 +468,34 @@ impl<F: Fn(u32)> Headless<F> {
         None
     }
 
-    pub fn simulate(mut self) -> (u32, Outcome) {
+    pub fn simulate(mut self) -> SimulationResult {
         loop {
             if let Some(outcome) = self.tick() {
                 let replay = serde_json::to_string(&self.replay).unwrap();
                 let mut file = File::create("replay.json").unwrap();
                 file.write_all(replay.as_bytes()).unwrap();
-                return (self.tick, outcome);
+                return SimulationResult(self.tick, outcome);
             }
         }
     }
+}
+
+// expose ability to simulate headless via FFI
+// beginnings of allowing training of a bot from python
+type TickFn = unsafe extern "C" fn(u32);
+pub unsafe extern "C" fn headless_simulate(
+    f1: TickFn,
+    s1: usize,
+    f2: TickFn,
+    s2: usize,
+) -> SimulationResult {
+    let bot1: &Fn(u32) = &|x| {
+        f1(x);
+    };
+    let bot2: &Fn(u32) = &|x| {
+        f2(x);
+    };
+    let bots = [bot1, bot2];
+    let headless = Headless::init(&bots, &[s1.into(), s2.into()]);
+    headless.simulate()
 }

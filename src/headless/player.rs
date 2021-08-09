@@ -6,3 +6,12 @@ pub unsafe fn count() -> usize {
 pub unsafe fn me() -> usize {
     ME
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn player_count() -> usize {
+    PLAYER_NUM
+}
+#[no_mangle]
+pub unsafe extern "C" fn player_me() -> usize {
+    ME
+}

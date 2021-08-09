@@ -19,3 +19,24 @@ pub unsafe fn position(index: usize) -> Position {
         y: STARS[index].pos.y,
     }
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn star_active_at(index: usize) -> u32 {
+    active_at(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn star_count() -> usize {
+    count()
+}
+#[no_mangle]
+pub unsafe extern "C" fn star_energy_capacity(index: usize) -> i32 {
+    energy_capacity(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn star_energy(index: usize) -> i32 {
+    energy(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn star_position(index: usize) -> Position {
+    position(index)
+}

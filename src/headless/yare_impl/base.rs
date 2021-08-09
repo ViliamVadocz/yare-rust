@@ -31,7 +31,7 @@ impl Base {
                 Shape::Square => SPIRIT_COSTS_SQUARE[0].1,
                 Shape::Triangle => SPIRIT_COSTS_TRIANGLE[0].1,
             },
-            disrupted: false
+            disrupted: false,
         }
     }
 

@@ -1,7 +1,12 @@
 pub use crate::bindings::{
     base::{
-        CIRCLE_START_OFFSET, DISRUPTION_RADIUS, PRODUCTION_OFFSET, SPIRIT_COSTS_CIRCLE,
-        SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE, START_BASE_HP,
+        CIRCLE_START_OFFSET,
+        DISRUPTION_RADIUS,
+        PRODUCTION_OFFSET,
+        SPIRIT_COSTS_CIRCLE,
+        SPIRIT_COSTS_SQUARE,
+        SPIRIT_COSTS_TRIANGLE,
+        START_BASE_HP,
     },
     position::Position,
 };
@@ -30,4 +35,33 @@ pub unsafe fn position(index: usize) -> Position {
         x: BASES[index].pos.x,
         y: BASES[index].pos.y,
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn base_count() -> usize {
+    count()
+}
+#[no_mangle]
+pub unsafe extern "C" fn base_current_spirit_cost(index: usize) -> i32 {
+    current_spirit_cost(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn base_energy_capacity(index: usize) -> i32 {
+    energy_capacity(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn base_energy(index: usize) -> i32 {
+    energy(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn base_hp(index: usize) -> u32 {
+    hp(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn base_player_id(index: usize) -> usize {
+    player_id(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn base_position(index: usize) -> Position {
+    position(index)
 }

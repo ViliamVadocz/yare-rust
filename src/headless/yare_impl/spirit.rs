@@ -1,6 +1,6 @@
 use crate::{
-    bindings::base::CIRCLE_START_OFFSET,
-    yare_impl::{Pos, Shape, Base},
+    bindings::base::{CIRCLE_START_OFFSET, SQUARE_START_OFFSET, TRIANGLE_START_OFFSET},
+    yare_impl::{Base, Pos, Shape},
 };
 
 #[derive(Clone, Debug)]
@@ -31,7 +31,6 @@ impl Spirit {
     }
 
     pub fn game_start(player_id: usize, shape: &Shape) -> Vec<Spirit> {
-        // TODO Create spirits in starting positions.
         let base_pos = Base::base_pos(player_id);
         match shape {
             Shape::Circle => CIRCLE_START_OFFSET[player_id]
@@ -39,8 +38,16 @@ impl Spirit {
                 .enumerate()
                 .map(|(i, p)| Spirit::new(player_id, *shape, base_pos + p.into(), i))
                 .collect(),
-            Shape::Square => vec![],
-            Shape::Triangle => vec![],
+            Shape::Square => SQUARE_START_OFFSET[player_id]
+                .iter()
+                .enumerate()
+                .map(|(i, p)| Spirit::new(player_id, *shape, base_pos + p.into(), i))
+                .collect(),
+            Shape::Triangle => TRIANGLE_START_OFFSET[player_id]
+                .iter()
+                .enumerate()
+                .map(|(i, p)| Spirit::new(player_id, *shape, base_pos + p.into(), i))
+                .collect(),
         }
     }
 

@@ -1,7 +1,7 @@
 use std::{
     cmp::Ordering,
-    iter::Sum,
     convert::From,
+    iter::Sum,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
@@ -43,7 +43,7 @@ impl Vec2 {
     pub fn normalize(self) -> Vec2 {
         let norm = self.norm();
         if norm == 0.0 {
-          return Vec2 { x: 1., y: 0. }
+            return Vec2 { x: 1., y: 0. };
         }
         self / self.norm()
     }

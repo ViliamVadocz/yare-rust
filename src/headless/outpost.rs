@@ -23,5 +23,30 @@ pub unsafe fn position(index: usize) -> Position {
     }
 }
 pub unsafe fn range(index: usize) -> f32 {
-    OUTPOSTS[index].range
+    OUTPOSTS[index].get_range()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn outpost_count() -> usize {
+    count()
+}
+#[no_mangle]
+pub unsafe extern "C" fn outpost_energy_capacity(index: usize) -> i32 {
+    energy_capacity(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn outpost_energy(index: usize) -> i32 {
+    energy(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn outpost_player_id(index: usize) -> usize {
+    player_id(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn outpost_position(index: usize) -> Position {
+    position(index)
+}
+#[no_mangle]
+pub unsafe extern "C" fn outpost_range(index: usize) -> f32 {
+    range(index)
 }

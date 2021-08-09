@@ -1,6 +1,8 @@
-use crate::yare_impl::*;
-use serde::{Serialize, Deserialize};
 use std::convert::From;
+
+use serde::{Deserialize, Serialize};
+
+use crate::yare_impl::*;
 
 // x,y
 #[derive(Serialize, Deserialize, Debug)]
@@ -13,10 +15,16 @@ impl From<&Vec2> for ReplayPos {
 
 // name, pos, size, energy, shape
 #[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct ReplaySpirit (String, ReplayPos, i32, i32, u32);
+pub(crate) struct ReplaySpirit(String, ReplayPos, i32, i32, u32);
 impl From<&Spirit> for ReplaySpirit {
     fn from(spirit: &Spirit) -> ReplaySpirit {
-        ReplaySpirit(spirit_name(spirit), (&spirit.pos).into(), spirit.size, spirit.energy, spirit.hp)
+        ReplaySpirit(
+            spirit_name(spirit),
+            (&spirit.pos).into(),
+            spirit.size,
+            spirit.energy,
+            spirit.hp,
+        )
     }
 }
 
@@ -33,21 +41,38 @@ impl ReplayEnergize {
         let name = match a {
             0 => "star_zxq",
             1 => "star_a1c",
-            _ => "star_p89"
-        }.to_string();
+            _ => "star_p89",
+        }
+        .to_string();
         ReplayEnergize(name, spirit_name(b), b.energize_self_amount())
     }
+
     pub fn spirit_to_spirit(a: &Spirit, b: &Spirit) -> ReplayEnergize {
         ReplayEnergize(spirit_name(a), spirit_name(b), a.energize_amount())
     }
+
     pub fn spirit_to_base(a: &Spirit, b: &Base) -> ReplayEnergize {
-        ReplayEnergize(spirit_name(a), format!("base_player{}", b.player_id), a.energize_amount())
+        ReplayEnergize(
+            spirit_name(a),
+            format!("base_player{}", b.player_id),
+            a.energize_amount(),
+        )
     }
+
     pub fn spirit_to_outpost(a: &Spirit, b: &Outpost) -> ReplayEnergize {
-        ReplayEnergize(spirit_name(a), "outpost_mdo".to_string(), a.energize_amount())
+        ReplayEnergize(
+            spirit_name(a),
+            "outpost_mdo".to_string(),
+            a.energize_amount(),
+        )
     }
+
     pub fn outpost_to_spirit(b: &Outpost, a: &Spirit) -> ReplayEnergize {
-        ReplayEnergize("outpost_mdo".to_string(), spirit_name(a), a.energize_amount())
+        ReplayEnergize(
+            "outpost_mdo".to_string(),
+            spirit_name(a),
+            a.energize_amount(),
+        )
     }
 }
 
@@ -69,7 +94,12 @@ impl From<&Outpost> for ReplayOutpost {
 pub(crate) struct ReplayBase(i32, i32, i32, u32);
 impl From<&Base> for ReplayBase {
     fn from(base: &Base) -> ReplayBase {
-        ReplayBase(base.energy, base.spirit_cost, base.disrupted as i32, base.hp)
+        ReplayBase(
+            base.energy,
+            base.spirit_cost,
+            base.disrupted as i32,
+            base.hp,
+        )
     }
 }
 
@@ -81,7 +111,6 @@ impl ReplayStars {
         ReplayStars(a, b, c)
     }
 }
-
 
 // "sh", unit, message
 #[derive(Serialize, Deserialize, Debug)]
@@ -99,6 +128,5 @@ pub(crate) struct ReplayTick {
     pub s: Vec<ReplayShout>,
     pub st: ReplayStars,
     pub g1: Vec<String>,
-    pub g2: Vec<String>
+    pub g2: Vec<String>,
 }
-
