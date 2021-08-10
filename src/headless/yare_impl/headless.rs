@@ -2,6 +2,8 @@ use std::{fs::File, io::prelude::*, mem, rc::Rc};
 
 use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
+use std::thread;
+use std::cell::RefCell;
 
 use crate::{
     bindings::{
@@ -37,13 +39,49 @@ pub enum Outcome {
     Draw,
 }
 
-pub(crate) static mut COMMANDS: Vec<Command> = Vec::new();
-pub(crate) static mut SPIRITS: Vec<Spirit> = Vec::new();
-pub(crate) static mut BASES: Vec<Base> = Vec::new();
-pub(crate) static mut STARS: Vec<Star> = Vec::new();
-pub(crate) static mut OUTPOSTS: Vec<Outpost> = Vec::new();
-pub(crate) static mut ME: usize = 0;
-pub(crate) static mut PLAYER_NUM: usize = 2;
+thread_local! {
+    pub(crate) static COMMANDS: RefCell<Vec<Command>> = RefCell::new(Vec::new());
+    pub(crate) static SPIRITS: RefCell<Vec<Spirit>> = RefCell::new(Vec::new());
+    pub(crate) static BASES: RefCell<Vec<Base>> = RefCell::new(Vec::new());
+    pub(crate) static STARS: RefCell<Vec<Star>> = RefCell::new(Vec::new());
+    pub(crate) static OUTPOSTS: RefCell<Vec<Outpost>> = RefCell::new(Vec::new());
+    pub(crate) static ME: RefCell<usize> = RefCell::new(0);
+    pub(crate) static PLAYER_NUM: RefCell<usize> = RefCell::new(2);
+}
+
+#[macro_export]
+macro_rules! set_static {
+    ($i:ident, $l:expr) => {
+        unsafe {
+            $i.with(|x| {
+                *x.borrow_mut() = $l
+            })
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! get_static {
+    ($i:ident) => {
+        unsafe {
+            &*$i.with(|x| {
+                x.as_ptr()
+            })
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! push_static {
+    ($i:ident, $l:expr) => {
+        unsafe {
+            $i.with(|x| {
+                x.borrow_mut().push($l)
+            })
+        }
+    }
+}
+
 
 pub type BotFn = Fn(u32);
 
@@ -112,27 +150,29 @@ impl Headless {
             .iter()
             .flat_map(|player| player.spirits.clone())
             .collect();
-        unsafe { SPIRITS = spirits };
+
+        set_static!(SPIRITS, spirits);
 
         let mut bases: Vec<Base> = self
             .players
             .iter()
             .map(|player| player.base.clone())
             .collect();
-        unsafe { BASES = bases };
-        unsafe { STARS = self.stars.clone() };
-        unsafe { OUTPOSTS = self.outposts.clone() };
+
+        set_static!(BASES, bases);
+        set_static!(STARS, self.stars.clone());
+        set_static!(OUTPOSTS, self.outposts.clone());
     }
 
     pub fn gather_commands(&mut self, player_index: usize) {
         let player = &self.players[player_index];
-        unsafe { ME = player.index };
+        set_static!(ME, player_index);
         (player.func)(self.tick);
 
         // sort commands by spirit, and then by command, and dedup to the last command
         // issued
         let mut player_commands: Vec<(usize, &Command)> =
-            unsafe { &COMMANDS }.into_iter().enumerate().collect();
+            get_static!(COMMANDS).iter().enumerate().collect();
         // dbg!(player_commands.len());
         player_commands.sort_by(|(a_i, a_command), (b_i, b_command)| {
             // if the commands are for different spirits, sort by spirit index
@@ -159,12 +199,12 @@ impl Headless {
         }
         // dbg!(player_commands.clone());
 
-        unsafe { COMMANDS = Vec::new() }
+        set_static!(COMMANDS, Vec::new());
     }
 
     pub fn process_commands(&mut self) -> Option<Outcome> {
-        let spirits = unsafe { &SPIRITS };
-        let bases = unsafe { &BASES };
+        let spirits = get_static!(SPIRITS);
+        let bases = get_static!(BASES);
 
         for player in self.players.iter_mut() {
             if player.base.energy >= player.base.spirit_cost && !player.base.disrupted {
@@ -612,6 +652,7 @@ impl From<SimulationResult> for ExternResult {
     }
 }
 
+#[no_mangle]
 pub unsafe extern "C" fn headless_simulate(
     f1: TickFn,
     s1: usize,
@@ -630,6 +671,7 @@ pub unsafe extern "C" fn headless_simulate(
     result.into()
 }
 
+#[no_mangle]
 pub unsafe extern "C" fn headless_init(
     f1: TickFn,
     s1: usize,
@@ -646,18 +688,21 @@ pub unsafe extern "C" fn headless_init(
     Box::into_raw(Box::new(Headless::init(&bots, &[s1.into(), s2.into()])))
 }
 
+#[no_mangle]
 pub unsafe extern "C" fn headless_update_env(ptr: *mut Headless) {
     let mut headless = Box::from_raw(ptr);
     headless.update_env();
     mem::forget(headless);
 }
 
+#[no_mangle]
 pub unsafe extern "C" fn headless_gather_commands(ptr: *mut Headless, player_index: usize) {
     let mut headless = Box::from_raw(ptr);
     headless.gather_commands(player_index);
     mem::forget(headless);
 }
 
+#[no_mangle]
 pub unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> ExternResult {
     let mut headless = Box::from_raw(ptr);
 
@@ -672,6 +717,8 @@ pub unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> Extern
         _ => ExternResult(tick, -1),
     }
 }
+
+#[no_mangle]
 pub unsafe extern "C" fn headless_free(ptr: *mut Headless) {
     let _headless = Box::from_raw(ptr);
 }

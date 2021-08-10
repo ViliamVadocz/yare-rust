@@ -9,6 +9,11 @@ license = "GPL-2.0-or-later"
 keywords = ["yare", "yareio", "bindings", "wasm", "webassembly"]
 categories = ["external-ffi-bindings", "games", "wasm"]
 
+[lib]
+name="yare_rust"
+crate-type = ["rlib", "dylib"]
+
+
 [features]
 headless = ["rand", "serde", "serde_json"]
 

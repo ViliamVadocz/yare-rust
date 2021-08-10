@@ -1,5 +1,6 @@
 #![allow(clashing_extern_declarations)]
 #![warn(missing_docs)]
+#![allow(warnings)]
 
 //! You should export a tick function with the following signature:
 //! ```

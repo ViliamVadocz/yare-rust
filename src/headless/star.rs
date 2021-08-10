@@ -1,22 +1,23 @@
 pub use crate::bindings::{position::Position, star::next_energy};
 use crate::headless::yare_impl::STARS;
+use crate::get_static;
 
 pub unsafe fn active_at(index: usize) -> u32 {
-    STARS[index].active_at
+    get_static!(STARS)[index].active_at
 }
 pub unsafe fn count() -> usize {
-    STARS.len()
+    get_static!(STARS).len()
 }
 pub unsafe fn energy_capacity(index: usize) -> i32 {
-    STARS[index].energy_cap
+    get_static!(STARS)[index].energy_cap
 }
 pub unsafe fn energy(index: usize) -> i32 {
-    STARS[index].energy
+    get_static!(STARS)[index].energy
 }
 pub unsafe fn position(index: usize) -> Position {
     Position {
-        x: STARS[index].pos.x,
-        y: STARS[index].pos.y,
+        x: get_static!(STARS)[index].pos.x,
+        y: get_static!(STARS)[index].pos.y,
     }
 }
 

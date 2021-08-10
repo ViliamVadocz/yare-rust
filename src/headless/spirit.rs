@@ -14,78 +14,81 @@ pub use crate::bindings::{
 };
 use crate::headless::yare_impl::{Command, Pos, COMMANDS, SPIRITS};
 
+use crate::get_static;
+use crate::push_static;
+
 pub unsafe fn count() -> usize {
-    SPIRITS.len()
+    get_static!(SPIRITS).len()
 }
 pub unsafe fn divide(index: usize) {
-    COMMANDS.push(Command::Divide { index });
+    push_static!(COMMANDS, Command::Divide { index });
 }
 pub unsafe fn energize_base(index: usize, base_index: usize) {
-    COMMANDS.push(Command::EnergizeBase {
+    push_static!(COMMANDS, Command::EnergizeBase {
         index,
         target: base_index,
     });
 }
 pub unsafe fn energize_outpost(index: usize, outpost_index: usize) {
-    COMMANDS.push(Command::EnergizeOutpost {
+    push_static!(COMMANDS, Command::EnergizeOutpost {
         index,
         target: outpost_index,
     });
 }
 pub unsafe fn energize(index: usize, spirit_index: usize) {
-    COMMANDS.push(Command::Energize {
+    push_static!(COMMANDS, Command::Energize {
         index,
         target: spirit_index,
     });
 }
 pub unsafe fn energy_capacity(index: usize) -> i32 {
-    SPIRITS[index].energy_cap
+    get_static!(SPIRITS)[index].energy_cap
 }
 pub unsafe fn energy(index: usize) -> i32 {
-    SPIRITS[index].energy
+    get_static!(SPIRITS)[index].energy
 }
 pub unsafe fn explode(index: usize) {
-    COMMANDS.push(Command::Explode { index })
+    push_static!(COMMANDS, Command::Explode { index })
 }
 pub unsafe fn goto(index: usize, x: f32, y: f32) {
-    COMMANDS.push(Command::Goto {
+    push_static!(COMMANDS, Command::Goto {
         index,
         target: Pos { x, y },
     })
 }
 pub unsafe fn hp(index: usize) -> u32 {
-    SPIRITS[index].hp
+    get_static!(SPIRITS)[index].hp
 }
 pub unsafe fn id(index: usize) -> Id {
     Id {
-        player_id: SPIRITS[index].player_id,
-        number: SPIRITS[index].id,
+        player_id: get_static!(SPIRITS)[index].player_id,
+        number: get_static!(SPIRITS)[index].id,
     }
 }
 pub unsafe fn jump(index: usize, x: f32, y: f32) {
-    COMMANDS.push(Command::Jump {
+    push_static!(COMMANDS, Command::Jump {
         index,
         target: Pos { x, y },
     });
 }
 pub unsafe fn merge(index: usize, spirit_index: usize) {
-    COMMANDS.push(Command::Merge {
+    push_static!(COMMANDS, Command::Merge {
         index,
         target: spirit_index,
     });
 }
 pub unsafe fn position(index: usize) -> Position {
     Position {
-        x: SPIRITS[index].pos.x,
-        y: SPIRITS[index].pos.y,
+        x: get_static!(SPIRITS)[index].pos.x,
+        y: get_static!(SPIRITS)[index].pos.y,
     }
 }
 pub unsafe fn shout(_index: usize, _string: *const c_char) {}
 pub unsafe fn shape(index: usize) -> usize {
-    SPIRITS[index].shape.into()
+    get_static!(SPIRITS)[index].shape.into()
 }
 pub unsafe fn size(index: usize) -> i32 {
-    SPIRITS[index].size
+    get_static!(SPIRITS)[index].size
 }
 
 #[no_mangle]
