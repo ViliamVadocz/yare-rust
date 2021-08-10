@@ -1,4 +1,4 @@
-use std::{fs::File, io::prelude::*};
+use std::{fs::File, io::prelude::*, mem, rc::Rc};
 
 use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
@@ -30,6 +30,7 @@ use crate::{
     yare_impl::*,
 };
 
+#[repr(C)]
 #[derive(Clone, Debug)]
 pub enum Outcome {
     Victory(usize),
@@ -44,16 +45,18 @@ pub(crate) static mut OUTPOSTS: Vec<Outpost> = Vec::new();
 pub(crate) static mut ME: usize = 0;
 pub(crate) static mut PLAYER_NUM: usize = 2;
 
-struct Player<'a, F: Fn(u32)> {
+pub type BotFn = Fn(u32);
+
+struct Player {
     index: usize,
-    func: &'a F,
+    func: Rc<BotFn>,
     shape: Shape,
     base: Base,
     spirits: Vec<Spirit>,
 }
 
-pub struct Headless<'a, F: Fn(u32)> {
-    players: Vec<Player<'a, F>>,
+pub struct Headless {
+    players: Vec<Player>,
     stars: Vec<Star>,
     outposts: Vec<Outpost>,
     tick: u32,
@@ -70,15 +73,15 @@ pub struct Headless<'a, F: Fn(u32)> {
 #[repr(C)]
 pub struct SimulationResult(u32, Outcome);
 
-impl<'a, F: Fn(u32)> Headless<'a, F> {
-    pub fn init(bots: &'a [F], shapes: &[Shape]) -> Self {
-        let players: Vec<Player<F>> = bots
+impl Headless {
+    pub fn init(bots: &[Rc<BotFn>], shapes: &[Shape]) -> Self {
+        let players: Vec<Player> = bots
             .into_iter()
             .zip(shapes.into_iter())
             .enumerate()
             .map(|(index, (func, &shape))| Player {
                 index,
-                func,
+                func: func.clone(),
                 shape,
                 base: Base::game_start(index, &shape),
                 spirits: Spirit::game_start(index, &shape),
@@ -103,7 +106,7 @@ impl<'a, F: Fn(u32)> Headless<'a, F> {
         }
     }
 
-    pub fn prep_statics(&mut self) {
+    pub fn update_env(&mut self) {
         let mut spirits: Vec<Spirit> = self
             .players
             .iter()
@@ -121,46 +124,45 @@ impl<'a, F: Fn(u32)> Headless<'a, F> {
         unsafe { OUTPOSTS = self.outposts.clone() };
     }
 
-    pub fn tick(&mut self) -> Option<Outcome> {
-        self.prep_statics();
+    pub fn gather_commands(&mut self, player_index: usize) {
+        let player = &self.players[player_index];
+        unsafe { ME = player.index };
+        (player.func)(self.tick);
 
-        for player in &self.players {
-            unsafe { ME = player.index };
-            (player.func)(self.tick);
-
-            // sort commands by spirit, and then by command, and dedup to the last command
-            // issued
-            let mut player_commands: Vec<(usize, &Command)> =
-                unsafe { &COMMANDS }.into_iter().enumerate().collect();
-            // dbg!(player_commands.len());
-            player_commands.sort_by(|(a_i, a_command), (b_i, b_command)| {
-                // if the commands are for different spirits, sort by spirit index
-                if a_command.index() != b_command.index() {
-                    return a_command.index().cmp(&b_command.index());
-                }
-                // if the commands are for the same spirit sort by command id
-                if a_command.id() != b_command.id() {
-                    return a_command.id().cmp(&b_command.id());
-                }
-                // if the commands are for the same spirit and are the same command
-                // sort the index of the command first
-                return b_i.cmp(&a_i);
-            });
-            // drop all duplicate commands except for the last one submitted for that
-            // spirit/command
-            player_commands.dedup_by(|(a_i, a_command), (b_i, b_command)| {
-                a_command.index() == b_command.index() && a_command.id() == b_command.id()
-            });
-
-            self.all_commands[player.index].clear();
-            for command in player_commands {
-                self.all_commands[player.index].push(*command.1);
+        // sort commands by spirit, and then by command, and dedup to the last command
+        // issued
+        let mut player_commands: Vec<(usize, &Command)> =
+            unsafe { &COMMANDS }.into_iter().enumerate().collect();
+        // dbg!(player_commands.len());
+        player_commands.sort_by(|(a_i, a_command), (b_i, b_command)| {
+            // if the commands are for different spirits, sort by spirit index
+            if a_command.index() != b_command.index() {
+                return a_command.index().cmp(&b_command.index());
             }
-            // dbg!(player_commands.clone());
+            // if the commands are for the same spirit sort by command id
+            if a_command.id() != b_command.id() {
+                return a_command.id().cmp(&b_command.id());
+            }
+            // if the commands are for the same spirit and are the same command
+            // sort the index of the command first
+            return b_i.cmp(&a_i);
+        });
+        // drop all duplicate commands except for the last one submitted for that
+        // spirit/command
+        player_commands.dedup_by(|(a_i, a_command), (b_i, b_command)| {
+            a_command.index() == b_command.index() && a_command.id() == b_command.id()
+        });
 
-            unsafe { COMMANDS = Vec::new() }
+        self.all_commands[player.index].clear();
+        for command in player_commands {
+            self.all_commands[player.index].push(*command.1);
         }
+        // dbg!(player_commands.clone());
 
+        unsafe { COMMANDS = Vec::new() }
+    }
+
+    pub fn process_commands(&mut self) -> Option<Outcome> {
         let spirits = unsafe { &SPIRITS };
         let bases = unsafe { &BASES };
 
@@ -570,6 +572,15 @@ impl<'a, F: Fn(u32)> Headless<'a, F> {
         None
     }
 
+    pub fn tick(&mut self) -> Option<Outcome> {
+        self.update_env();
+
+        for player_index in 0..self.players.len() {
+            self.gather_commands(player_index)
+        }
+        self.process_commands()
+    }
+
     pub fn simulate(mut self) -> SimulationResult {
         loop {
             if let Some(outcome) = self.tick() {
@@ -585,19 +596,82 @@ impl<'a, F: Fn(u32)> Headless<'a, F> {
 // expose ability to simulate headless via FFI
 // beginnings of allowing training of a bot from python
 type TickFn = unsafe extern "C" fn(u32);
+
+// (tick, -1 for still going. 0 or 1 == winner. 2 == draw)
+#[repr(C)]
+pub struct ExternResult(u32, i32);
+
+impl From<SimulationResult> for ExternResult {
+    fn from(result: SimulationResult) -> ExternResult {
+        let SimulationResult(tick, outcome) = result;
+        let res = match outcome {
+            Outcome::Victory(x) => x,
+            Outcome::Draw => 2,
+        };
+        ExternResult(tick, res as i32)
+    }
+}
+
 pub unsafe extern "C" fn headless_simulate(
     f1: TickFn,
     s1: usize,
     f2: TickFn,
     s2: usize,
-) -> SimulationResult {
-    let bot1: &Fn(u32) = &|x| {
+) -> ExternResult {
+    let bot1: Rc<BotFn> = Rc::new(move |x| {
         f1(x);
-    };
-    let bot2: &Fn(u32) = &|x| {
+    });
+    let bot2: Rc<BotFn> = Rc::new(move |x| {
         f2(x);
-    };
+    });
     let bots = [bot1, bot2];
     let headless = Headless::init(&bots, &[s1.into(), s2.into()]);
-    headless.simulate()
+    let result = headless.simulate();
+    result.into()
+}
+
+pub unsafe extern "C" fn headless_init(
+    f1: TickFn,
+    s1: usize,
+    f2: TickFn,
+    s2: usize,
+) -> *mut Headless {
+    let bot1: Rc<BotFn> = Rc::new(move |x| {
+        f1(x);
+    });
+    let bot2: Rc<BotFn> = Rc::new(move |x| {
+        f2(x);
+    });
+    let bots = [bot1, bot2];
+    Box::into_raw(Box::new(Headless::init(&bots, &[s1.into(), s2.into()])))
+}
+
+pub unsafe extern "C" fn headless_update_env(ptr: *mut Headless) {
+    let mut headless = Box::from_raw(ptr);
+    headless.update_env();
+    mem::forget(headless);
+}
+
+pub unsafe extern "C" fn headless_gather_commands(ptr: *mut Headless, player_index: usize) {
+    let mut headless = Box::from_raw(ptr);
+    headless.gather_commands(player_index);
+    mem::forget(headless);
+}
+
+pub unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> ExternResult {
+    let mut headless = Box::from_raw(ptr);
+
+    let tick = headless.tick;
+    let res = headless.process_commands();
+    mem::forget(headless);
+    match res {
+        Some(outcome) => match outcome {
+            Outcome::Victory(i) => ExternResult(tick, i as i32),
+            _ => ExternResult(tick, 2),
+        },
+        _ => ExternResult(tick, -1),
+    }
+}
+pub unsafe extern "C" fn headless_free(ptr: *mut Headless) {
+    let _headless = Box::from_raw(ptr);
 }
