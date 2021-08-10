@@ -10,7 +10,7 @@ keywords = ["yare", "yareio", "bindings", "wasm", "webassembly"]
 categories = ["external-ffi-bindings", "games", "wasm"]
 
 [lib]
-name="yare_rust"
+name="yareio"
 crate-type = ["rlib", "dylib"]
 
 
