@@ -16,6 +16,8 @@ pub const EXPLODE_RADIUS: f32 = 160.;
 /// The amount of damage given to enemy spirits in the `EXPLODE_RADIUS`
 /// once a spirit explodes.
 pub const EXPLODE_DAMAGE: i32 = 10;
+// Max Circle Merge size
+pub const MAX_CIRCLE_SIZE: i32 = 100;
 
 #[link(wasm_import_module = "spirits")]
 extern "C" {

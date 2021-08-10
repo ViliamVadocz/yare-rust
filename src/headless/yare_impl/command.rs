@@ -1,6 +1,6 @@
 use crate::yare_impl::Pos;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub(crate) enum Command {
     Goto { index: usize, target: Pos },
     Energize { index: usize, target: usize },
