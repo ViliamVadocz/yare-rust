@@ -91,69 +91,89 @@ pub unsafe fn size(index: usize) -> i32 {
     get_static!(SPIRITS)[index].size
 }
 
+// uses u32's instead of usize to make node bindings more efficient
+#[repr(C)]
+pub struct ExternId {
+    /// The player id. All spirits owned by a player have the same player id.
+    pub player_id: u32,
+    /// The spirit number.
+    /// It is zero indexed, unlike in the game where it starts at 1.
+    pub number: u32,
+}
+
+impl From<Id> for ExternId {
+    fn from(id: Id) -> ExternId {
+        ExternId {
+            player_id: id.player_id as u32,
+            number: id.number as u32
+        }
+    }
+}
+
+
 #[no_mangle]
-pub unsafe extern "C" fn spirit_count() -> usize {
-    count()
+pub unsafe extern "C" fn spirit_count() -> u32 {
+    count() as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_divide(index: usize) {
-    divide(index);
+pub unsafe extern "C" fn spirit_divide(index: u32) {
+    divide(index as usize);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energize_base(index: usize, base_index: usize) {
-    energize_base(index, base_index)
+pub unsafe extern "C" fn spirit_energize_base(index: u32, base_index: u32) {
+    energize_base(index as usize, base_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energize_outpost(index: usize, outpost_index: usize) {
-    energize_outpost(index, outpost_index)
+pub unsafe extern "C" fn spirit_energize_outpost(index: u32, outpost_index: u32) {
+    energize_outpost(index as usize, outpost_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energize(index: usize, spirit_index: usize) {
-    energize(index, spirit_index)
+pub unsafe extern "C" fn spirit_energize(index: u32, spirit_index: u32) {
+    energize(index as usize, spirit_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energy_capacity(index: usize) -> i32 {
-    energy_capacity(index)
+pub unsafe extern "C" fn spirit_energy_capacity(index: u32) -> i32 {
+    energy_capacity(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energy(index: usize) -> i32 {
-    energy(index)
+pub unsafe extern "C" fn spirit_energy(index: u32) -> i32 {
+    energy(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_explode(index: usize) {
-    explode(index)
+pub unsafe extern "C" fn spirit_explode(index: u32) {
+    explode(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_goto(index: usize, x: f32, y: f32) {
-    goto(index, x, y)
+pub unsafe extern "C" fn spirit_goto(index: u32, x: f32, y: f32) {
+    goto(index as usize, x, y)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_hp(index: usize) -> u32 {
-    hp(index)
+pub unsafe extern "C" fn spirit_hp(index: u32) -> u32 {
+    hp(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_id(index: usize) -> Id {
-    id(index)
+pub unsafe extern "C" fn spirit_id(index: u32) -> ExternId {
+    id(index as usize).into()
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_jump(index: usize, x: f32, y: f32) {
-    jump(index, x, y)
+pub unsafe extern "C" fn spirit_jump(index: u32, x: f32, y: f32) {
+    jump(index as usize, x, y)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_merge(index: usize, spirit_index: usize) {
-    merge(index, spirit_index)
+pub unsafe extern "C" fn spirit_merge(index: u32, spirit_index: u32) {
+    merge(index as usize, spirit_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_position(index: usize) -> Position {
-    position(index)
+pub unsafe extern "C" fn spirit_position(index: u32) -> Position {
+    position(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_shout(_index: usize, _string: *const c_char) {}
+pub unsafe extern "C" fn spirit_shout(_index: u32, _string: *const c_char) {}
 #[no_mangle]
-pub unsafe extern "C" fn spirit_shape(index: usize) -> usize {
-    shape(index)
+pub unsafe extern "C" fn spirit_shape(index: u32) -> u32 {
+    shape(index as usize) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_size(index: usize) -> i32 {
-    size(index)
+pub unsafe extern "C" fn spirit_size(index: u32) -> i32 {
+    size(index as usize)
 }

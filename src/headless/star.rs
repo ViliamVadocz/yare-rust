@@ -22,22 +22,22 @@ pub unsafe fn position(index: usize) -> Position {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn star_active_at(index: usize) -> u32 {
-    active_at(index)
+pub unsafe extern "C" fn star_active_at(index: u32) -> u32 {
+    active_at(index as usize) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn star_count() -> usize {
-    count()
+pub unsafe extern "C" fn star_count() -> u32 {
+    count() as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn star_energy_capacity(index: usize) -> i32 {
-    energy_capacity(index)
+pub unsafe extern "C" fn star_energy_capacity(index: u32) -> i32 {
+    energy_capacity(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn star_energy(index: usize) -> i32 {
-    energy(index)
+pub unsafe extern "C" fn star_energy(index: u32) -> i32 {
+    energy(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn star_position(index: usize) -> Position {
-    position(index)
+pub unsafe extern "C" fn star_position(index: u32) -> Position {
+    position(index as usize)
 }

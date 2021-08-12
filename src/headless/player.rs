@@ -9,10 +9,10 @@ pub unsafe fn me() -> usize {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn player_count() -> usize {
-    *get_static!(PLAYER_NUM)
+pub unsafe extern "C" fn player_count() -> u32 {
+    *get_static!(PLAYER_NUM) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn player_me() -> usize {
-    *get_static!(ME)
+pub unsafe extern "C" fn player_me() -> u32 {
+    *get_static!(ME) as u32
 }

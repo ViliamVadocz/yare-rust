@@ -42,30 +42,30 @@ pub unsafe fn position(index: usize) -> Position {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn base_count() -> usize {
-    count()
+pub unsafe extern "C" fn base_count() -> u32 {
+    count() as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_current_spirit_cost(index: usize) -> i32 {
-    current_spirit_cost(index)
+pub unsafe extern "C" fn base_current_spirit_cost(index: u32) -> i32 {
+    current_spirit_cost(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_energy_capacity(index: usize) -> i32 {
-    energy_capacity(index)
+pub unsafe extern "C" fn base_energy_capacity(index: u32) -> i32 {
+    energy_capacity(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_energy(index: usize) -> i32 {
-    energy(index)
+pub unsafe extern "C" fn base_energy(index: u32) -> i32 {
+    energy(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_hp(index: usize) -> u32 {
-    hp(index)
+pub unsafe extern "C" fn base_hp(index: u32) -> u32 {
+    hp(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_player_id(index: usize) -> usize {
-    player_id(index)
+pub unsafe extern "C" fn base_player_id(index: u32) -> u32 {
+    player_id(index as usize) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_position(index: usize) -> Position {
-    position(index)
+pub unsafe extern "C" fn base_position(index: u32) -> Position {
+    position(index as usize)
 }

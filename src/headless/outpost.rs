@@ -26,31 +26,31 @@ pub unsafe fn position(index: usize) -> Position {
         y: get_static!(OUTPOSTS)[index].pos.y,
     }
 }
-pub unsafe fn range(index: usize) -> f32 {
-    get_static!(OUTPOSTS)[index].get_range()
+pub unsafe fn range(index: u32) -> f32 {
+    get_static!(OUTPOSTS)[index as usize].get_range()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn outpost_count() -> usize {
-    count()
+pub unsafe extern "C" fn outpost_count() -> u32 {
+    count() as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_energy_capacity(index: usize) -> i32 {
-    energy_capacity(index)
+pub unsafe extern "C" fn outpost_energy_capacity(index: u32) -> i32 {
+    energy_capacity(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_energy(index: usize) -> i32 {
-    energy(index)
+pub unsafe extern "C" fn outpost_energy(index: u32) -> i32 {
+    energy(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_player_id(index: usize) -> usize {
-    player_id(index)
+pub unsafe extern "C" fn outpost_player_id(index: u32) -> u32 {
+    player_id(index as usize) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_position(index: usize) -> Position {
-    position(index)
+pub unsafe extern "C" fn outpost_position(index: u32) -> Position {
+    position(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_range(index: usize) -> f32 {
+pub unsafe extern "C" fn outpost_range(index: u32) -> f32 {
     range(index)
 }

@@ -4,6 +4,8 @@ use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 use std::thread;
 use std::cell::RefCell;
+use std::os::raw::c_char;
+use std::ffi::CStr;
 
 use crate::{
     bindings::{
@@ -99,6 +101,7 @@ pub struct Headless {
     outposts: Vec<Outpost>,
     tick: u32,
     replay: Vec<ReplayTick>,
+    replay_path: Option<String>,
 
     all_commands: Vec<Vec<Command>>,
     charging_spirits: Vec<Vec<usize>>,
@@ -112,7 +115,7 @@ pub struct Headless {
 pub struct SimulationResult(u32, Outcome);
 
 impl Headless {
-    pub fn init(bots: &[Rc<BotFn>], shapes: &[Shape]) -> Self {
+    pub fn init(bots: &[Rc<BotFn>], shapes: &[Shape], replay_path: Option<String>) -> Self {
         let players: Vec<Player> = bots
             .into_iter()
             .zip(shapes.into_iter())
@@ -136,6 +139,7 @@ impl Headless {
             outposts,
             tick: 0,
             replay: Vec::new(),
+            replay_path,
             all_commands: vec![Vec::new(); player_len],
             charging_spirits: vec![vec![0; 0]; stars_len],
             spirit_energy_changes: Vec::with_capacity(200),
@@ -261,10 +265,12 @@ impl Headless {
                             }
                         } else {
                             // charge friendly
-                            energizes.push(ReplayEnergize::spirit_to_spirit(
-                                source_spirit,
-                                target_spirit,
-                            ));
+                            if self.replay_path.is_some() {
+                                energizes.push(ReplayEnergize::spirit_to_spirit(
+                                    source_spirit,
+                                    target_spirit,
+                                ));
+                            }
                             self.spirit_energy_changes[*index] -= source_spirit.energize_amount();
                             if source_spirit.player_id == target_spirit.player_id {
                                 self.spirit_energy_changes[*target] +=
@@ -287,7 +293,9 @@ impl Headless {
                             continue;
                         }
                         self.spirit_energy_changes[*index] -= source_spirit.energize_amount();
-                        energizes.push(ReplayEnergize::spirit_to_base(source_spirit, target_base));
+                        if self.replay_path.is_some() {
+                            energizes.push(ReplayEnergize::spirit_to_base(source_spirit, target_base));
+                        }
                         if source_spirit.player_id == target_base.player_id {
                             // charging base
                             // dbg!(source_spirit, target_base);
@@ -309,10 +317,12 @@ impl Headless {
                             continue;
                         }
 
-                        energizes.push(ReplayEnergize::spirit_to_outpost(
-                            source_spirit,
-                            target_outpost,
-                        ));
+                        if self.replay_path.is_some() {
+                            energizes.push(ReplayEnergize::spirit_to_outpost(
+                                source_spirit,
+                                target_outpost,
+                            ));
+                        }
                         self.spirit_energy_changes[*index] -= source_spirit.energize_amount();
                         if target_outpost.player_id == source_spirit.player_id
                             || target_outpost.energy == 0
@@ -367,10 +377,12 @@ impl Headless {
                     outpost.energy -= attack;
                     self.spirit_energy_changes[target] -= 2 * attack;
 
-                    energizes.push(ReplayEnergize::outpost_to_spirit(
-                        outpost,
-                        &nearby_spirits[0].1,
-                    ))
+                    if self.replay_path.is_some() {
+                        energizes.push(ReplayEnergize::outpost_to_spirit(
+                            outpost,
+                            &nearby_spirits[0].1,
+                        ))
+                    }
                 }
             }
             let deltas = &self.outpost_energy_changes[i];
@@ -428,7 +440,7 @@ impl Headless {
                 let spirit_copy = &spirits[*index];
                 let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
                 let amount = star.energy.min(spirit.energize_self_amount());
-                if amount > 0 {
+                if amount > 0 && self.replay_path.is_some() {
                     energizes.push(ReplayEnergize::from_star(i, &spirit))
                 }
                 star.energy -= amount;
@@ -586,23 +598,25 @@ impl Headless {
             self.players[i].base.disrupted = disrupted;
         }
 
-        self.replay.push(ReplayTick {
-            t: self.tick,
-            p1: self.players[0].spirits.iter().map(|s| s.into()).collect(),
-            p2: self.players[1].spirits.iter().map(|s| s.into()).collect(),
-            b1: (&self.players[0].base).into(),
-            b2: (&self.players[1].base).into(),
-            ou: (&self.outposts[0]).into(),
-            e: energizes,
-            s: Vec::new(),
-            g1: Vec::new(),
-            g2: Vec::new(),
-            st: ReplayStars::new(
-                self.stars[0].energy,
-                self.stars[1].energy,
-                self.stars[2].energy,
-            ),
-        });
+        if self.replay_path.is_some() {
+            self.replay.push(ReplayTick {
+                t: self.tick,
+                p1: self.players[0].spirits.iter().map(|s| s.into()).collect(),
+                p2: self.players[1].spirits.iter().map(|s| s.into()).collect(),
+                b1: (&self.players[0].base).into(),
+                b2: (&self.players[1].base).into(),
+                ou: (&self.outposts[0]).into(),
+                e: energizes,
+                s: Vec::new(),
+                g1: Vec::new(),
+                g2: Vec::new(),
+                st: ReplayStars::new(
+                    self.stars[0].energy,
+                    self.stars[1].energy,
+                    self.stars[2].energy,
+                ),
+            });
+        }
 
         self.tick += 1;
         if self.tick > MAX_GAME_LEN {
@@ -624,11 +638,17 @@ impl Headless {
     pub fn simulate(mut self) -> SimulationResult {
         loop {
             if let Some(outcome) = self.tick() {
-                let replay = serde_json::to_string(&self.replay).unwrap();
-                let mut file = File::create("replay.json").unwrap();
-                file.write_all(replay.as_bytes()).unwrap();
+                self.write_replay();
                 return SimulationResult(self.tick, outcome);
             }
+        }
+    }
+
+    pub fn write_replay(&self) {
+        if let Some(path) = &self.replay_path {
+            let replay = serde_json::to_string(&self.replay).unwrap();
+            let mut file = File::create(path).unwrap();
+            file.write_all(replay.as_bytes()).unwrap();
         }
     }
 }
@@ -658,6 +678,7 @@ pub unsafe extern "C" fn headless_simulate(
     s1: usize,
     f2: TickFn,
     s2: usize,
+    file_path_ptr: *const c_char,
 ) -> ExternResult {
     let bot1: Rc<BotFn> = Rc::new(move |x| {
         f1(x);
@@ -666,7 +687,16 @@ pub unsafe extern "C" fn headless_simulate(
         f2(x);
     });
     let bots = [bot1, bot2];
-    let headless = Headless::init(&bots, &[s1.into(), s2.into()]);
+
+    let file_path = if file_path_ptr.is_null() {
+        None
+    } else {
+        let c_str: &CStr = CStr::from_ptr(file_path_ptr);
+        let str_slice: &str = c_str.to_str().unwrap();
+        Some(str_slice.to_owned())
+    };
+
+    let headless = Headless::init(&bots, &[s1.into(), s2.into()], file_path);
     let result = headless.simulate();
     result.into()
 }
@@ -674,9 +704,10 @@ pub unsafe extern "C" fn headless_simulate(
 #[no_mangle]
 pub unsafe extern "C" fn headless_init(
     f1: TickFn,
-    s1: usize,
+    s1: u32,
     f2: TickFn,
-    s2: usize,
+    s2: u32,
+    file_path_ptr: *const c_char,
 ) -> *mut Headless {
     let bot1: Rc<BotFn> = Rc::new(move |x| {
         f1(x);
@@ -685,7 +716,16 @@ pub unsafe extern "C" fn headless_init(
         f2(x);
     });
     let bots = [bot1, bot2];
-    Box::into_raw(Box::new(Headless::init(&bots, &[s1.into(), s2.into()])))
+
+    let file_path = if file_path_ptr.is_null() {
+        None
+    } else {
+        let c_str: &CStr = CStr::from_ptr(file_path_ptr);
+        let str_slice: &str = c_str.to_str().unwrap();
+        Some(str_slice.to_owned())
+    };
+
+    Box::into_raw(Box::new(Headless::init(&bots, &[(s1 as usize).into(), (s2 as usize).into()], file_path)))
 }
 
 #[no_mangle]
@@ -696,9 +736,9 @@ pub unsafe extern "C" fn headless_update_env(ptr: *mut Headless) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn headless_gather_commands(ptr: *mut Headless, player_index: usize) {
+pub unsafe extern "C" fn headless_gather_commands(ptr: *mut Headless, player_index: u32) {
     let mut headless = Box::from_raw(ptr);
-    headless.gather_commands(player_index);
+    headless.gather_commands(player_index as usize);
     mem::forget(headless);
 }
 
@@ -708,14 +748,18 @@ pub unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> Extern
 
     let tick = headless.tick;
     let res = headless.process_commands();
-    mem::forget(headless);
-    match res {
-        Some(outcome) => match outcome {
-            Outcome::Victory(i) => ExternResult(tick, i as i32),
-            _ => ExternResult(tick, 2),
+    let out = match res {
+        Some(outcome) => {
+            headless.write_replay();
+            match outcome {
+                Outcome::Victory(i) => ExternResult(tick, i as i32),
+                _ => ExternResult(tick, 2),
+            }
         },
         _ => ExternResult(tick, -1),
-    }
+    };
+    mem::forget(headless);
+    out
 }
 
 #[no_mangle]
