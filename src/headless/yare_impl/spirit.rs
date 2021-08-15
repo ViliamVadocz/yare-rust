@@ -1,5 +1,6 @@
 use crate::{
     bindings::base::{CIRCLE_START_OFFSET, SQUARE_START_OFFSET, TRIANGLE_START_OFFSET},
+    bindings::spirit::ENERGIZE_RANGE,
     yare_impl::{Base, Pos, Shape},
 };
 
@@ -57,5 +58,11 @@ impl Spirit {
 
     pub fn energize_self_amount(&self) -> i32 {
         self.size.min(self.energy_cap - self.energy)
+    }
+
+    pub fn can_energize(&self, player_id: usize, target_pos: Pos) -> bool {
+        !(self.hp < 1
+            || player_id != self.player_id
+            || self.pos.dist(target_pos) > ENERGIZE_RANGE)
     }
 }

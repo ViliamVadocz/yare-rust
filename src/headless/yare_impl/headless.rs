@@ -244,9 +244,7 @@ impl Headless {
                     Command::Energize { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_spirit = &spirits[*target];
-                        if source_spirit.hp < 1
-                            || player.index != source_spirit.player_id
-                            || source_spirit.pos.dist(target_spirit.pos) > ENERGIZE_RANGE
+                        if !source_spirit.can_energize(player.index, target_spirit.pos)
                         {
                             continue;
                         }
@@ -280,9 +278,7 @@ impl Headless {
                     Command::EnergizeBase { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_base = &bases[*target];
-                        if source_spirit.hp < 1
-                            || player.index != source_spirit.player_id
-                            || source_spirit.pos.dist(target_base.pos) > ENERGIZE_RANGE
+                        if !source_spirit.can_energize(player.index, target_base.pos)
                         {
                             continue;
                         }
@@ -302,9 +298,7 @@ impl Headless {
                     Command::EnergizeOutpost { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_outpost = &self.outposts[*target];
-                        if source_spirit.hp < 1
-                            || player.index != source_spirit.player_id
-                            || source_spirit.pos.dist(target_outpost.pos) > ENERGIZE_RANGE
+                        if !source_spirit.can_energize(player.index, target_outpost.pos)
                         {
                             continue;
                         }
