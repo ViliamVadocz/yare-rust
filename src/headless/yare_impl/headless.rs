@@ -371,8 +371,7 @@ impl Headless {
                     })
                     .collect();
                 if nearby_spirits.len() > 0 {
-                    nearby_spirits.shuffle(&mut thread_rng());
-                    let target = nearby_spirits[0].0;
+                    let target = nearby_spirits.choose(&mut thread_rng()).unwrap().0;
                     let attack = outpost.get_attack_energy();
                     outpost.energy -= attack;
                     self.spirit_energy_changes[target] -= 2 * attack;
