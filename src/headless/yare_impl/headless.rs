@@ -177,7 +177,6 @@ impl Headless {
         // issued
         let mut player_commands: Vec<(usize, &Command)> =
             get_static!(COMMANDS).iter().enumerate().collect();
-        // dbg!(player_commands.len());
         player_commands.sort_by(|(a_i, a_command), (b_i, b_command)| {
             // if the commands are for different spirits, sort by spirit index
             if a_command.index() != b_command.index() {
@@ -201,7 +200,6 @@ impl Headless {
         for command in player_commands {
             self.all_commands[player.index].push(*command.1);
         }
-        // dbg!(player_commands.clone());
 
         set_static!(COMMANDS, Vec::new());
     }
@@ -213,7 +211,6 @@ impl Headless {
         for player in self.players.iter_mut() {
             if player.base.energy >= player.base.spirit_cost && !player.base.disrupted {
                 player.base.energy -= player.base.spirit_cost;
-                // dbg!(&player.base);
                 let spirit_id = player.spirits.len();
                 let offset = &PRODUCTION_OFFSET[player.index];
                 let pos = player.base.pos + offset.into();
@@ -251,7 +248,6 @@ impl Headless {
                             || player.index != source_spirit.player_id
                             || source_spirit.pos.dist(target_spirit.pos) > ENERGIZE_RANGE
                         {
-                            // dbg!(source_spirit);
                             continue;
                         }
                         // self energize
@@ -259,7 +255,6 @@ impl Headless {
                             for (i, star) in self.stars.iter().enumerate() {
                                 // check distance
                                 if star.pos.dist(source_spirit.pos) <= ENERGIZE_RANGE {
-                                    // dbg!(source_spirit);
                                     self.charging_spirits[i].push(*index);
                                 }
                             }
@@ -289,7 +284,6 @@ impl Headless {
                             || player.index != source_spirit.player_id
                             || source_spirit.pos.dist(target_base.pos) > ENERGIZE_RANGE
                         {
-                            // dbg!(source_spirit);
                             continue;
                         }
                         self.spirit_energy_changes[*index] -= source_spirit.energize_amount();
@@ -298,11 +292,9 @@ impl Headless {
                         }
                         if source_spirit.player_id == target_base.player_id {
                             // charging base
-                            // dbg!(source_spirit, target_base);
                             self.base_energy_changes[*target] += source_spirit.energize_amount();
                         } else {
                             // attacking enemy
-                            // dbg!(source_spirit, target_base);
                             self.base_energy_changes[*target] -=
                                 2 * source_spirit.energize_amount();
                         }
@@ -497,7 +489,6 @@ impl Headless {
                             || dead_spirit_copy.pos.dist(merged_spirit_copy.pos) > MERGE_DISTANCE
                             || dead_spirit_copy.size + merged_spirit_copy.size > MAX_CIRCLE_SIZE
                         {
-                            // dbg!(source_spirit);
                             continue;
                         }
                         self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id].hp =
