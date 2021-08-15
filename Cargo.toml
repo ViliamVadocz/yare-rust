@@ -9,11 +9,18 @@ license = "GPL-2.0-or-later"
 keywords = ["yare", "yareio", "bindings", "wasm", "webassembly"]
 categories = ["external-ffi-bindings", "games", "wasm"]
 
+[lib]
+name="yareio"
+crate-type = ["rlib", "dylib"]
+
+
 [features]
-headless = ["rand"]
+headless = ["rand", "serde", "serde_json"]
 
 [dependencies]
 rand = { version = "0.8.4", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
 
 [profile.release]
 opt-level = "s"

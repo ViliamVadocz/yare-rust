@@ -1,6 +1,7 @@
 use crate::{
-    bindings::base::CIRCLE_START_OFFSET,
-    yare_impl::{Pos, Shape},
+    bindings::base::{CIRCLE_START_OFFSET, SQUARE_START_OFFSET, TRIANGLE_START_OFFSET},
+    bindings::spirit::ENERGIZE_RANGE,
+    yare_impl::{Base, Pos, Shape},
 };
 
 #[derive(Clone, Debug)]
@@ -17,11 +18,7 @@ pub(crate) struct Spirit {
 
 impl Spirit {
     pub fn new(player_id: usize, shape: Shape, pos: Pos, id: usize) -> Spirit {
-        let size = match &shape {
-            Shape::Circle => 1,
-            Shape::Square => 10,
-            Shape::Triangle => 3,
-        };
+        let size = shape.base_size();
         Spirit {
             energy_cap: size * 10,
             energy: size * 10,
@@ -35,15 +32,37 @@ impl Spirit {
     }
 
     pub fn game_start(player_id: usize, shape: &Shape) -> Vec<Spirit> {
-        // TODO Create spirits in starting positions.
+        let base_pos = Base::base_pos(player_id);
         match shape {
             Shape::Circle => CIRCLE_START_OFFSET[player_id]
                 .iter()
                 .enumerate()
-                .map(|(i, p)| Spirit::new(player_id, *shape, p.into(), i))
+                .map(|(i, p)| Spirit::new(player_id, *shape, base_pos + p.into(), i))
                 .collect(),
-            Shape::Square => vec![],
-            Shape::Triangle => vec![],
+            Shape::Square => SQUARE_START_OFFSET[player_id]
+                .iter()
+                .enumerate()
+                .map(|(i, p)| Spirit::new(player_id, *shape, base_pos + p.into(), i))
+                .collect(),
+            Shape::Triangle => TRIANGLE_START_OFFSET[player_id]
+                .iter()
+                .enumerate()
+                .map(|(i, p)| Spirit::new(player_id, *shape, base_pos + p.into(), i))
+                .collect(),
         }
+    }
+
+    pub fn energize_amount(&self) -> i32 {
+        self.size.min(self.energy)
+    }
+
+    pub fn energize_self_amount(&self) -> i32 {
+        self.size.min(self.energy_cap - self.energy)
+    }
+
+    pub fn can_energize(&self, player_id: usize, target_pos: Pos) -> bool {
+        !(self.hp < 1
+            || player_id != self.player_id
+            || self.pos.dist(target_pos) > ENERGIZE_RANGE)
     }
 }

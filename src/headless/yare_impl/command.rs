@@ -1,6 +1,6 @@
 use crate::yare_impl::Pos;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub(crate) enum Command {
     Goto { index: usize, target: Pos },
     Energize { index: usize, target: usize },
@@ -20,7 +20,7 @@ pub(crate) enum Command {
 // divide
 // jump
 impl Command {
-    fn priority(&self) -> usize {
+    pub fn priority(&self) -> usize {
         match self {
             Command::Energize { .. } => 0,
             Command::EnergizeBase { .. } => 0,
@@ -30,6 +30,33 @@ impl Command {
             Command::Merge { .. } => 2,
             Command::Divide { .. } => 3,
             Command::Jump { .. } => 4,
+        }
+    }
+
+    // used to compared whether a command overwrites another one
+    pub fn id(&self) -> usize {
+        match self {
+            Command::Energize { .. } => 0,
+            Command::EnergizeBase { .. } => 0,
+            Command::EnergizeOutpost { .. } => 0,
+            Command::Explode { .. } => 1,
+            Command::Goto { .. } => 2,
+            Command::Merge { .. } => 3,
+            Command::Divide { .. } => 4,
+            Command::Jump { .. } => 5,
+        }
+    }
+
+    pub fn index(&self) -> usize {
+        match self {
+            Command::Energize { index, .. } => *index,
+            Command::EnergizeBase { index, .. } => *index,
+            Command::EnergizeOutpost { index, .. } => *index,
+            Command::Explode { index, .. } => *index,
+            Command::Goto { index, .. } => *index,
+            Command::Merge { index, .. } => *index,
+            Command::Divide { index, .. } => *index,
+            Command::Jump { index, .. } => *index,
         }
     }
 }

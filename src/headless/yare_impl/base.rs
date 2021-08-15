@@ -11,6 +11,7 @@ pub(crate) struct Base {
     pub player_id: usize,
     pub pos: Pos,
     pub spirit_cost: i32,
+    pub disrupted: bool,
 }
 
 impl Base {
@@ -24,16 +25,21 @@ impl Base {
             energy: 0,
             hp: 1,
             player_id,
-            pos: if player_id == 0 {
-                Pos { x: 1600., y: 700. }
-            } else {
-                Pos { x: 2600., y: 1700. }
-            },
+            pos: Base::base_pos(player_id),
             spirit_cost: match shape {
                 Shape::Circle => SPIRIT_COSTS_CIRCLE[0].1,
                 Shape::Square => SPIRIT_COSTS_SQUARE[0].1,
                 Shape::Triangle => SPIRIT_COSTS_TRIANGLE[0].1,
             },
+            disrupted: false,
+        }
+    }
+
+    pub fn base_pos(player_id: usize) -> Pos {
+        if player_id == 0 {
+            Pos { x: 1600., y: 700. }
+        } else {
+            Pos { x: 2600., y: 1700. }
         }
     }
 }
