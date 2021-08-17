@@ -65,7 +65,7 @@ impl Vec2 {
     }
 
     pub fn in_range(self, other: Vec2, range: f32) -> bool {
-        (self - other) < range
+        (self - other) <= range
     }
 
     pub fn towards(self, other: Vec2, length: f32) -> Vec2 {
