@@ -1,6 +1,5 @@
 pub use crate::bindings::{position::Position, star::next_energy};
-use crate::headless::yare_impl::STARS;
-use crate::get_static;
+use crate::{get_static, headless::yare_impl::STARS};
 
 pub unsafe fn active_at(index: usize) -> u32 {
     get_static!(STARS)[index].active_at

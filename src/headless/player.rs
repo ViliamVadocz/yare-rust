@@ -1,5 +1,7 @@
-use crate::headless::yare_impl::{ME, PLAYER_NUM};
-use crate::get_static;
+use crate::{
+    get_static,
+    headless::yare_impl::{ME, PLAYER_NUM},
+};
 
 pub unsafe fn count() -> usize {
     *get_static!(PLAYER_NUM)

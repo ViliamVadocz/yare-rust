@@ -8,14 +8,16 @@ pub use crate::bindings::{
         EXPLODE_DAMAGE,
         EXPLODE_RADIUS,
         JUMP_COST_PER_DIST,
+        MAX_CIRCLE_SIZE,
         MERGE_DISTANCE,
         MOVEMENT_SPEED,
     },
 };
-use crate::headless::yare_impl::{Command, Pos, COMMANDS, SPIRITS};
-
-use crate::get_static;
-use crate::push_static;
+use crate::{
+    get_static,
+    headless::yare_impl::{Command, Pos, COMMANDS, SPIRITS},
+    push_static,
+};
 
 pub unsafe fn count() -> usize {
     get_static!(SPIRITS).len()
@@ -105,11 +107,10 @@ impl From<Id> for ExternId {
     fn from(id: Id) -> ExternId {
         ExternId {
             player_id: id.player_id as u32,
-            number: id.number as u32
+            number: id.number as u32,
         }
     }
 }
-
 
 #[no_mangle]
 pub unsafe extern "C" fn spirit_count() -> u32 {

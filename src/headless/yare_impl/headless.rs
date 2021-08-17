@@ -1,11 +1,16 @@
-use std::{fs::File, io::prelude::*, mem, rc::Rc};
+use std::{
+    cell::RefCell,
+    ffi::CStr,
+    fs::File,
+    io::prelude::*,
+    mem,
+    os::raw::c_char,
+    rc::Rc,
+    thread,
+};
 
 use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
-use std::thread;
-use std::cell::RefCell;
-use std::os::raw::c_char;
-use std::ffi::CStr;
 
 use crate::{
     bindings::{
@@ -54,36 +59,23 @@ thread_local! {
 #[macro_export]
 macro_rules! set_static {
     ($i:ident, $l:expr) => {
-        unsafe {
-            $i.with(|x| {
-                *x.borrow_mut() = $l
-            })
-        }
-    }
+        unsafe { $i.with(|x| *x.borrow_mut() = $l) }
+    };
 }
 
 #[macro_export]
 macro_rules! get_static {
     ($i:ident) => {
-        unsafe {
-            &*$i.with(|x| {
-                x.as_ptr()
-            })
-        }
-    }
+        unsafe { &*$i.with(|x| x.as_ptr()) }
+    };
 }
 
 #[macro_export]
 macro_rules! push_static {
     ($i:ident, $l:expr) => {
-        unsafe {
-            $i.with(|x| {
-                x.borrow_mut().push($l)
-            })
-        }
-    }
+        unsafe { $i.with(|x| x.borrow_mut().push($l)) }
+    };
 }
-
 
 pub type BotFn = Fn(u32);
 
@@ -244,8 +236,7 @@ impl Headless {
                     Command::Energize { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_spirit = &spirits[*target];
-                        if !source_spirit.can_energize(player.index, target_spirit.pos)
-                        {
+                        if !source_spirit.can_energize(player.index, target_spirit.pos) {
                             continue;
                         }
                         // self energize
@@ -278,13 +269,13 @@ impl Headless {
                     Command::EnergizeBase { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_base = &bases[*target];
-                        if !source_spirit.can_energize(player.index, target_base.pos)
-                        {
+                        if !source_spirit.can_energize(player.index, target_base.pos) {
                             continue;
                         }
                         self.spirit_energy_changes[*index] -= source_spirit.energize_amount();
                         if self.replay_path.is_some() {
-                            energizes.push(ReplayEnergize::spirit_to_base(source_spirit, target_base));
+                            energizes
+                                .push(ReplayEnergize::spirit_to_base(source_spirit, target_base));
                         }
                         if source_spirit.player_id == target_base.player_id {
                             // charging base
@@ -298,8 +289,7 @@ impl Headless {
                     Command::EnergizeOutpost { index, target } => {
                         let source_spirit = &spirits[*index];
                         let target_outpost = &self.outposts[*target];
-                        if !source_spirit.can_energize(player.index, target_outpost.pos)
-                        {
+                        if !source_spirit.can_energize(player.index, target_outpost.pos) {
                             continue;
                         }
 
@@ -709,7 +699,11 @@ pub unsafe extern "C" fn headless_init(
         Some(str_slice.to_owned())
     };
 
-    Box::into_raw(Box::new(Headless::init(&bots, &[(s1 as usize).into(), (s2 as usize).into()], file_path)))
+    Box::into_raw(Box::new(Headless::init(
+        &bots,
+        &[(s1 as usize).into(), (s2 as usize).into()],
+        file_path,
+    )))
 }
 
 #[no_mangle]
@@ -739,7 +733,7 @@ pub unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> Extern
                 Outcome::Victory(i) => ExternResult(tick, i as i32),
                 _ => ExternResult(tick, 2),
             }
-        },
+        }
         _ => ExternResult(tick, -1),
     };
     mem::forget(headless);
