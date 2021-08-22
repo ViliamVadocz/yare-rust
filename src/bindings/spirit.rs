@@ -1,5 +1,6 @@
 #[cfg(not(feature = "headless"))]
 use std::os::raw::c_char;
+
 #[cfg(not(feature = "headless"))]
 use crate::bindings::{id::Id, position::Position};
 
