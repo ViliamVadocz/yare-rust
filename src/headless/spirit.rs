@@ -15,8 +15,8 @@ pub use crate::bindings::{
 };
 use crate::{
     get_static,
-    headless::yare_impl::{Command, Pos, COMMANDS, SPIRITS},
     push_static,
+    yare_impl::{Command, Vec2, COMMANDS, SPIRITS},
 };
 
 pub unsafe fn count() -> usize {
@@ -55,7 +55,7 @@ pub unsafe fn explode(index: usize) {
 pub unsafe fn goto(index: usize, x: f32, y: f32) {
     push_static!(COMMANDS, Command::Goto {
         index,
-        target: Pos { x, y },
+        target: Vec2 { x, y },
     })
 }
 pub unsafe fn hp(index: usize) -> u32 {
@@ -70,7 +70,7 @@ pub unsafe fn id(index: usize) -> Id {
 pub unsafe fn jump(index: usize, x: f32, y: f32) {
     push_static!(COMMANDS, Command::Jump {
         index,
-        target: Pos { x, y },
+        target: Vec2 { x, y },
     });
 }
 pub unsafe fn merge(index: usize, spirit_index: usize) {
@@ -113,68 +113,68 @@ impl From<Id> for ExternId {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn spirit_count() -> u32 {
+unsafe extern "C" fn spirit_count() -> u32 {
     count() as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_divide(index: u32) {
+unsafe extern "C" fn spirit_divide(index: u32) {
     divide(index as usize);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energize_base(index: u32, base_index: u32) {
+unsafe extern "C" fn spirit_energize_base(index: u32, base_index: u32) {
     energize_base(index as usize, base_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energize_outpost(index: u32, outpost_index: u32) {
+unsafe extern "C" fn spirit_energize_outpost(index: u32, outpost_index: u32) {
     energize_outpost(index as usize, outpost_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energize(index: u32, spirit_index: u32) {
+unsafe extern "C" fn spirit_energize(index: u32, spirit_index: u32) {
     energize(index as usize, spirit_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energy_capacity(index: u32) -> i32 {
+unsafe extern "C" fn spirit_energy_capacity(index: u32) -> i32 {
     energy_capacity(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_energy(index: u32) -> i32 {
+unsafe extern "C" fn spirit_energy(index: u32) -> i32 {
     energy(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_explode(index: u32) {
+unsafe extern "C" fn spirit_explode(index: u32) {
     explode(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_goto(index: u32, x: f32, y: f32) {
+unsafe extern "C" fn spirit_goto(index: u32, x: f32, y: f32) {
     goto(index as usize, x, y)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_hp(index: u32) -> u32 {
+unsafe extern "C" fn spirit_hp(index: u32) -> u32 {
     hp(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_id(index: u32) -> ExternId {
+unsafe extern "C" fn spirit_id(index: u32) -> ExternId {
     id(index as usize).into()
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_jump(index: u32, x: f32, y: f32) {
+unsafe extern "C" fn spirit_jump(index: u32, x: f32, y: f32) {
     jump(index as usize, x, y)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_merge(index: u32, spirit_index: u32) {
+unsafe extern "C" fn spirit_merge(index: u32, spirit_index: u32) {
     merge(index as usize, spirit_index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_position(index: u32) -> Position {
+unsafe extern "C" fn spirit_position(index: u32) -> Position {
     position(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_shout(_index: u32, _string: *const c_char) {}
+unsafe extern "C" fn spirit_shout(_index: u32, _string: *const c_char) {}
 #[no_mangle]
-pub unsafe extern "C" fn spirit_shape(index: u32) -> u32 {
+unsafe extern "C" fn spirit_shape(index: u32) -> u32 {
     shape(index as usize) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn spirit_size(index: u32) -> i32 {
+unsafe extern "C" fn spirit_size(index: u32) -> i32 {
     size(index as usize)
 }

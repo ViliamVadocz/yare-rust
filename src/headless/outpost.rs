@@ -2,11 +2,7 @@ pub use crate::bindings::{
     outpost::{NORMAL_ATTACK, NORMAL_RANGE, UPGRADE_ATTACK, UPGRADE_ENERGY, UPGRADE_RANGE},
     position::Position,
 };
-
-#[macro_use]
-use crate::get_static;
-
-use crate::headless::yare_impl::OUTPOSTS;
+use crate::{get_static, yare_impl::OUTPOSTS};
 
 pub unsafe fn count() -> usize {
     get_static!(OUTPOSTS).len()
@@ -26,31 +22,31 @@ pub unsafe fn position(index: usize) -> Position {
         y: get_static!(OUTPOSTS)[index].pos.y,
     }
 }
-pub unsafe fn range(index: u32) -> f32 {
-    get_static!(OUTPOSTS)[index as usize].get_range()
+pub unsafe fn range(index: usize) -> f32 {
+    get_static!(OUTPOSTS)[index].get_range()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn outpost_count() -> u32 {
+unsafe extern "C" fn outpost_count() -> u32 {
     count() as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_energy_capacity(index: u32) -> i32 {
+unsafe extern "C" fn outpost_energy_capacity(index: u32) -> i32 {
     energy_capacity(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_energy(index: u32) -> i32 {
+unsafe extern "C" fn outpost_energy(index: u32) -> i32 {
     energy(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_player_id(index: u32) -> u32 {
+unsafe extern "C" fn outpost_player_id(index: u32) -> u32 {
     player_id(index as usize) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_position(index: u32) -> Position {
+unsafe extern "C" fn outpost_position(index: u32) -> Position {
     position(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn outpost_range(index: u32) -> f32 {
-    range(index)
+unsafe extern "C" fn outpost_range(index: u32) -> f32 {
+    range(index as usize)
 }

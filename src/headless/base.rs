@@ -12,11 +12,7 @@ pub use crate::bindings::{
     },
     position::Position,
 };
-
-#[macro_use]
-use crate::get_static;
-
-use crate::headless::yare_impl::BASES;
+use crate::{get_static, yare_impl::BASES};
 
 pub unsafe fn count() -> usize {
     get_static!(BASES).len()
@@ -44,30 +40,30 @@ pub unsafe fn position(index: usize) -> Position {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn base_count() -> u32 {
+unsafe extern "C" fn base_count() -> u32 {
     count() as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_current_spirit_cost(index: u32) -> i32 {
+unsafe extern "C" fn base_current_spirit_cost(index: u32) -> i32 {
     current_spirit_cost(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_energy_capacity(index: u32) -> i32 {
+unsafe extern "C" fn base_energy_capacity(index: u32) -> i32 {
     energy_capacity(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_energy(index: u32) -> i32 {
+unsafe extern "C" fn base_energy(index: u32) -> i32 {
     energy(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_hp(index: u32) -> u32 {
+unsafe extern "C" fn base_hp(index: u32) -> u32 {
     hp(index as usize)
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_player_id(index: u32) -> u32 {
+unsafe extern "C" fn base_player_id(index: u32) -> u32 {
     player_id(index as usize) as u32
 }
 #[no_mangle]
-pub unsafe extern "C" fn base_position(index: u32) -> Position {
+unsafe extern "C" fn base_position(index: u32) -> Position {
     position(index as usize)
 }

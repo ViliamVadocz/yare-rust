@@ -1,9 +1,7 @@
-use crate::{
-    bindings::{
-        base::{CIRCLE_START_OFFSET, SQUARE_START_OFFSET, TRIANGLE_START_OFFSET},
-        spirit::ENERGIZE_RANGE,
-    },
-    yare_impl::{Base, Pos, Shape},
+use super::{base::Base, shape::Shape, vec2::Vec2};
+use crate::bindings::{
+    base::{CIRCLE_START_OFFSET, SQUARE_START_OFFSET, TRIANGLE_START_OFFSET},
+    spirit::ENERGIZE_RANGE,
 };
 
 #[derive(Clone, Debug)]
@@ -13,13 +11,13 @@ pub(crate) struct Spirit {
     pub hp: u32,
     pub id: usize,
     pub player_id: usize,
-    pub pos: Pos,
+    pub pos: Vec2,
     pub shape: Shape,
     pub size: i32,
 }
 
 impl Spirit {
-    pub fn new(player_id: usize, shape: Shape, pos: Pos, id: usize) -> Spirit {
+    pub fn new(player_id: usize, shape: Shape, pos: Vec2, id: usize) -> Spirit {
         let size = shape.base_size();
         Spirit {
             energy_cap: size * 10,
@@ -62,7 +60,7 @@ impl Spirit {
         self.size.min(self.energy_cap - self.energy)
     }
 
-    pub fn can_energize(&self, player_id: usize, target_pos: Pos) -> bool {
+    pub fn can_energize(&self, player_id: usize, target_pos: Vec2) -> bool {
         !(self.hp < 1 || player_id != self.player_id || self.pos.dist(target_pos) > ENERGIZE_RANGE)
     }
 }

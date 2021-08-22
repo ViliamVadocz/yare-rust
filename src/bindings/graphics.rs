@@ -1,3 +1,4 @@
+#[cfg(not(feature = "headless"))]
 #[link(wasm_import_module = "graphics")]
 extern "C" {
     /// Set the colour of future shapes.

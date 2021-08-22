@@ -83,6 +83,7 @@ pub const TRIANGLE_START_OFFSET: [&[Position]; 2] = [
     ],
 ];
 
+#[cfg(not(feature = "headless"))]
 #[link(wasm_import_module = "bases")]
 extern "C" {
     /// Get the number of bases in the game.

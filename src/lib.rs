@@ -7,7 +7,7 @@
 //! pub extern "C" fn tick(tick: u32) {}
 //! ```
 
-pub(crate) mod bindings {
+mod bindings {
     /// The base creates new spirits once it has enough energy.
     /// If your base if destroyed you lose the game.
     pub mod base;
@@ -40,7 +40,7 @@ pub(crate) mod bindings {
 pub use bindings::*;
 
 #[cfg(feature = "headless")]
-pub(crate) mod headless {
+mod headless {
     #![allow(missing_docs)]
     #![allow(clippy::missing_safety_doc)]
     pub mod base;

@@ -1,5 +1,6 @@
+#[cfg(not(feature = "headless"))]
 use std::os::raw::c_char;
-
+#[cfg(not(feature = "headless"))]
 use crate::bindings::{id::Id, position::Position};
 
 /// Maximum range of energy transfer.
@@ -19,6 +20,7 @@ pub const EXPLODE_DAMAGE: i32 = 10;
 /// Maximum size that circles can reach through merging.
 pub const MAX_CIRCLE_SIZE: i32 = 100;
 
+#[cfg(not(feature = "headless"))]
 #[link(wasm_import_module = "spirits")]
 extern "C" {
     /// Get the number of spirits in the game.

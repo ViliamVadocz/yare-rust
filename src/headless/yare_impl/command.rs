@@ -1,12 +1,12 @@
-use crate::yare_impl::Pos;
+use super::vec2::Vec2;
 
 #[derive(Clone, Debug, Copy)]
 pub(crate) enum Command {
-    Goto { index: usize, target: Pos },
+    Goto { index: usize, target: Vec2 },
     Energize { index: usize, target: usize },
     EnergizeBase { index: usize, target: usize },
     EnergizeOutpost { index: usize, target: usize },
-    Jump { index: usize, target: Pos },
+    Jump { index: usize, target: Vec2 },
     Merge { index: usize, target: usize },
     Divide { index: usize },
     Explode { index: usize },
@@ -20,19 +20,6 @@ pub(crate) enum Command {
 // divide
 // jump
 impl Command {
-    pub fn priority(&self) -> usize {
-        match self {
-            Command::Energize { .. } => 0,
-            Command::EnergizeBase { .. } => 0,
-            Command::EnergizeOutpost { .. } => 0,
-            Command::Explode { .. } => 0,
-            Command::Goto { .. } => 1,
-            Command::Merge { .. } => 2,
-            Command::Divide { .. } => 3,
-            Command::Jump { .. } => 4,
-        }
-    }
-
     // used to compared whether a command overwrites another one
     pub fn id(&self) -> usize {
         match self {

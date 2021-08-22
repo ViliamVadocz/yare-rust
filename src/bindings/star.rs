@@ -1,5 +1,6 @@
 use std::cmp::max;
 
+#[cfg(not(feature = "headless"))]
 use crate::bindings::position::Position;
 
 /// Each tick a star generates 3 + 1% of its current energy,
@@ -8,6 +9,7 @@ pub fn next_energy(energy: i32) -> i32 {
     ((max(energy, 0) + 3) as f32 * 1.01).round() as i32
 }
 
+#[cfg(not(feature = "headless"))]
 #[link(wasm_import_module = "stars")]
 extern "C" {
     /// The tick at which a star begins to generate energy.

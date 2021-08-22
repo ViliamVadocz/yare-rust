@@ -1,3 +1,4 @@
+#[cfg(not(feature = "headless"))]
 #[link(wasm_import_module = "random")]
 extern "C" {
     /// Get a pseudorandom number in the range [0, 1)

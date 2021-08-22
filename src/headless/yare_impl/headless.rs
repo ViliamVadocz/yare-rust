@@ -1,42 +1,28 @@
-use std::{
-    cell::RefCell,
-    ffi::CStr,
-    fs::File,
-    io::prelude::*,
-    mem,
-    os::raw::c_char,
-    rc::Rc,
-    thread,
-};
+use std::{cell::RefCell, ffi::CStr, fs::File, io::prelude::*, mem, os::raw::c_char, rc::Rc};
 
 use rand::{seq::SliceRandom, thread_rng};
-use serde::{Deserialize, Serialize};
 
-use crate::{
-    bindings::{
-        base::{
-            CIRCLE_START_OFFSET,
-            DISRUPTION_RADIUS,
-            PRODUCTION_OFFSET,
-            SPIRIT_COSTS_CIRCLE,
-            SPIRIT_COSTS_SQUARE,
-            SPIRIT_COSTS_TRIANGLE,
-        },
-        game::MAX_GAME_LEN,
-        outpost::NORMAL_RANGE,
-        position::Position,
-        spirit::{
-            ENERGIZE_RANGE,
-            EXPLODE_DAMAGE,
-            EXPLODE_RADIUS,
-            JUMP_COST_PER_DIST,
-            MAX_CIRCLE_SIZE,
-            MERGE_DISTANCE,
-            MOVEMENT_SPEED,
-        },
-        star::next_energy,
+use super::{
+    base::Base,
+    command::Command,
+    outpost::Outpost,
+    replaytick::*,
+    shape::Shape,
+    spirit::Spirit,
+    star::Star,
+};
+use crate::bindings::{
+    base::{DISRUPTION_RADIUS, PRODUCTION_OFFSET},
+    game::MAX_GAME_LEN,
+    spirit::{
+        ENERGIZE_RANGE,
+        EXPLODE_DAMAGE,
+        JUMP_COST_PER_DIST,
+        MAX_CIRCLE_SIZE,
+        MERGE_DISTANCE,
+        MOVEMENT_SPEED,
     },
-    yare_impl::*,
+    star::next_energy,
 };
 
 #[repr(C)]
@@ -56,28 +42,31 @@ thread_local! {
     pub(crate) static PLAYER_NUM: RefCell<usize> = RefCell::new(2);
 }
 
+///
 #[macro_export]
 macro_rules! set_static {
     ($i:ident, $l:expr) => {
-        unsafe { $i.with(|x| *x.borrow_mut() = $l) }
+        $i.with(|x| *x.borrow_mut() = $l)
     };
 }
 
+///
 #[macro_export]
 macro_rules! get_static {
     ($i:ident) => {
-        unsafe { &*$i.with(|x| x.as_ptr()) }
+        &*$i.with(|x| x.as_ptr())
     };
 }
 
+///
 #[macro_export]
 macro_rules! push_static {
     ($i:ident, $l:expr) => {
-        unsafe { $i.with(|x| x.borrow_mut().push($l)) }
+        $i.with(|x| x.borrow_mut().push($l))
     };
 }
 
-pub type BotFn = Fn(u32);
+pub type BotFn = dyn Fn(u32);
 
 struct Player {
     index: usize,
@@ -104,7 +93,7 @@ pub struct Headless {
 
 #[derive(Debug, Clone)]
 #[repr(C)]
-pub struct SimulationResult(u32, Outcome);
+pub struct SimulationResult(pub u32, pub Outcome);
 
 impl Headless {
     pub fn init(bots: &[Rc<BotFn>], shapes: &[Shape], replay_path: Option<String>) -> Self {
@@ -141,7 +130,7 @@ impl Headless {
     }
 
     pub fn update_env(&mut self) {
-        let mut spirits: Vec<Spirit> = self
+        let spirits: Vec<Spirit> = self
             .players
             .iter()
             .flat_map(|player| player.spirits.clone())
@@ -149,7 +138,7 @@ impl Headless {
 
         set_static!(SPIRITS, spirits);
 
-        let mut bases: Vec<Base> = self
+        let bases: Vec<Base> = self
             .players
             .iter()
             .map(|player| player.base.clone())
@@ -167,24 +156,26 @@ impl Headless {
 
         // sort commands by spirit, and then by command, and dedup to the last command
         // issued
-        let mut player_commands: Vec<(usize, &Command)> =
-            get_static!(COMMANDS).iter().enumerate().collect();
+        let mut player_commands: Vec<(usize, &Command)> = unsafe { get_static!(COMMANDS) }
+            .iter()
+            .enumerate()
+            .collect();
         player_commands.sort_by(|(a_i, a_command), (b_i, b_command)| {
-            // if the commands are for different spirits, sort by spirit index
             if a_command.index() != b_command.index() {
-                return a_command.index().cmp(&b_command.index());
+                // if the commands are for different spirits, sort by spirit index
+                a_command.index().cmp(&b_command.index())
+            } else if a_command.id() != b_command.id() {
+                // if the commands are for the same spirit sort by command id
+                a_command.id().cmp(&b_command.id())
+            } else {
+                // if the commands are for the same spirit and are the same command
+                // sort the index of the command first
+                b_i.cmp(a_i)
             }
-            // if the commands are for the same spirit sort by command id
-            if a_command.id() != b_command.id() {
-                return a_command.id().cmp(&b_command.id());
-            }
-            // if the commands are for the same spirit and are the same command
-            // sort the index of the command first
-            return b_i.cmp(&a_i);
         });
         // drop all duplicate commands except for the last one submitted for that
         // spirit/command
-        player_commands.dedup_by(|(a_i, a_command), (b_i, b_command)| {
+        player_commands.dedup_by(|(_, a_command), (_, b_command)| {
             a_command.index() == b_command.index() && a_command.id() == b_command.id()
         });
 
@@ -197,8 +188,8 @@ impl Headless {
     }
 
     pub fn process_commands(&mut self) -> Option<Outcome> {
-        let spirits = get_static!(SPIRITS);
-        let bases = get_static!(BASES);
+        let spirits = unsafe { get_static!(SPIRITS) };
+        let bases = unsafe { get_static!(BASES) };
 
         for player in self.players.iter_mut() {
             if player.base.energy >= player.base.spirit_cost && !player.base.disrupted {
@@ -337,16 +328,16 @@ impl Headless {
             let outpost = &mut self.outposts[i];
             if outpost.energy > 0 {
                 // attack a single random nearby spirit
-                let mut nearby_spirits: Vec<(usize, &Spirit)> = spirits
+                let nearby_spirits: Vec<(usize, &Spirit)> = spirits
                     .iter()
                     .enumerate()
-                    .filter(|(i, s)| {
+                    .filter(|(_i, s)| {
                         s.hp > 0
                             && s.player_id != outpost.player_id
                             && s.pos.dist(outpost.pos) <= outpost.get_range()
                     })
                     .collect();
-                if nearby_spirits.len() > 0 {
+                if !nearby_spirits.is_empty() {
                     let target = nearby_spirits.choose(&mut thread_rng()).unwrap().0;
                     let attack = outpost.get_attack_energy();
                     outpost.energy -= attack;
@@ -355,7 +346,7 @@ impl Headless {
                     if self.replay_path.is_some() {
                         energizes.push(ReplayEnergize::outpost_to_spirit(
                             outpost,
-                            &nearby_spirits[0].1,
+                            nearby_spirits[0].1,
                         ))
                     }
                 }
@@ -389,16 +380,11 @@ impl Headless {
         }
 
         // Apply all energy changes to spirits bases and outposts
-        for i in 0..self.spirit_energy_changes.len() {
-            let delta = self.spirit_energy_changes[i];
-            let spirit_copy = &spirits[i];
+        for (delta, spirit_copy) in self.spirit_energy_changes.iter().zip(spirits.iter()) {
             let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
             spirit.energy += delta;
         }
-
-        for i in 0..self.base_energy_changes.len() {
-            let delta = self.base_energy_changes[i];
-            let base_copy = &bases[i];
+        for (delta, base_copy) in self.base_energy_changes.iter().zip(bases.iter()) {
             let base = &mut self.players[base_copy.player_id].base;
             base.energy += delta;
         }
@@ -416,7 +402,7 @@ impl Headless {
                 let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
                 let amount = star.energy.min(spirit.energize_self_amount());
                 if amount > 0 && self.replay_path.is_some() {
-                    energizes.push(ReplayEnergize::from_star(i, &spirit))
+                    energizes.push(ReplayEnergize::from_star(i, spirit))
                 }
                 star.energy -= amount;
                 spirit.energy += amount;
@@ -427,76 +413,65 @@ impl Headless {
         // move
 
         for (player_i, player_commands) in self.all_commands.iter().enumerate() {
-            let player = &mut self.players[player_i];
+            let _player = &mut self.players[player_i];
 
             for command in player_commands.iter() {
-                match command {
-                    Command::Goto { index, target } => {
-                        // TODO: orbit stars/bases/outposts
-                        let spirit_copy = &spirits[*index];
-                        let spirit =
-                            &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
-                        let dist = spirit.pos.dist(*target).min(MOVEMENT_SPEED);
-                        spirit.pos = spirit.pos.towards(*target, dist);
-                    }
-                    _ => (),
+                if let Command::Goto { index, target } = command {
+                    // TODO: orbit stars/bases/outposts
+                    let spirit_copy = &spirits[*index];
+                    let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
+                    let dist = spirit.pos.dist(*target).min(MOVEMENT_SPEED);
+                    spirit.pos = spirit.pos.towards(*target, dist);
                 }
             }
         }
 
         // merge
         for (player_i, player_commands) in self.all_commands.iter().enumerate() {
-            let player = &mut self.players[player_i];
+            let _player = &mut self.players[player_i];
 
             for command in player_commands.iter() {
-                match command {
-                    Command::Merge { index, target } => {
-                        // TODO: orbit stars/bases/outposts
-                        let dead_spirit_copy = &spirits[*index];
-                        let dead_spirit_copy = self.players[dead_spirit_copy.player_id].spirits
-                            [dead_spirit_copy.id]
-                            .clone();
+                if let Command::Merge { index, target } = command {
+                    // TODO: orbit stars/bases/outposts
+                    let dead_spirit_copy = &spirits[*index];
+                    let dead_spirit_copy = self.players[dead_spirit_copy.player_id].spirits
+                        [dead_spirit_copy.id]
+                        .clone();
 
-                        let merged_spirit_copy = &spirits[*target];
-                        let merged_spirit_copy = self.players[merged_spirit_copy.player_id].spirits
-                            [merged_spirit_copy.id]
-                            .clone();
+                    let merged_spirit_copy = &spirits[*target];
+                    let merged_spirit_copy = self.players[merged_spirit_copy.player_id].spirits
+                        [merged_spirit_copy.id]
+                        .clone();
 
-                        if dead_spirit_copy.hp < 1
-                            || merged_spirit_copy.hp < 1
-                            || merged_spirit_copy.energy < 0
-                            || dead_spirit_copy.energy < 0
-                            || player_i != dead_spirit_copy.player_id
-                            || merged_spirit_copy.player_id != dead_spirit_copy.player_id
-                            || merged_spirit_copy.shape != Shape::Circle
-                            || dead_spirit_copy.shape != Shape::Circle
-                            || dead_spirit_copy.pos.dist(merged_spirit_copy.pos) > MERGE_DISTANCE
-                            || dead_spirit_copy.size + merged_spirit_copy.size > MAX_CIRCLE_SIZE
-                        {
-                            continue;
-                        }
-                        self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id].hp =
-                            0;
-                        self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id]
-                            .size = 1;
-                        self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id]
-                            .energy = 0;
-                        self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id]
-                            .energy_cap = 10;
-
-                        self.players[merged_spirit_copy.player_id].spirits
-                            [merged_spirit_copy.id]
-                            .energy += dead_spirit_copy.energy;
-                        self.players[merged_spirit_copy.player_id].spirits
-                            [merged_spirit_copy.id]
-                            .size += dead_spirit_copy.size;
-                        self.players[merged_spirit_copy.player_id].spirits[merged_spirit_copy.id]
-                            .energy_cap = self.players[merged_spirit_copy.player_id].spirits
-                            [merged_spirit_copy.id]
-                            .size
-                            * 10;
+                    if dead_spirit_copy.hp < 1
+                        || merged_spirit_copy.hp < 1
+                        || merged_spirit_copy.energy < 0
+                        || dead_spirit_copy.energy < 0
+                        || player_i != dead_spirit_copy.player_id
+                        || merged_spirit_copy.player_id != dead_spirit_copy.player_id
+                        || merged_spirit_copy.shape != Shape::Circle
+                        || dead_spirit_copy.shape != Shape::Circle
+                        || dead_spirit_copy.pos.dist(merged_spirit_copy.pos) > MERGE_DISTANCE
+                        || dead_spirit_copy.size + merged_spirit_copy.size > MAX_CIRCLE_SIZE
+                    {
+                        continue;
                     }
-                    _ => (),
+                    self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id].hp = 0;
+                    self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id].size = 1;
+                    self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id].energy =
+                        0;
+                    self.players[dead_spirit_copy.player_id].spirits[dead_spirit_copy.id]
+                        .energy_cap = 10;
+
+                    self.players[merged_spirit_copy.player_id].spirits[merged_spirit_copy.id]
+                        .energy += dead_spirit_copy.energy;
+                    self.players[merged_spirit_copy.player_id].spirits[merged_spirit_copy.id]
+                        .size += dead_spirit_copy.size;
+                    self.players[merged_spirit_copy.player_id].spirits[merged_spirit_copy.id]
+                        .energy_cap = self.players[merged_spirit_copy.player_id].spirits
+                        [merged_spirit_copy.id]
+                        .size
+                        * 10;
                 }
             }
         }
@@ -505,24 +480,20 @@ impl Headless {
 
         // jump
         for (player_i, player_commands) in self.all_commands.iter().enumerate() {
-            let player = &mut self.players[player_i];
+            let _player = &mut self.players[player_i];
 
             for command in player_commands.iter() {
-                match command {
-                    Command::Jump { index, target } => {
-                        // TODO: exclude star/base positions from jump
-                        let spirit_copy = &spirits[*index];
-                        let spirit =
-                            &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
-                        let dist = spirit
-                            .pos
-                            .dist(*target)
-                            .min(spirit.energy as f32 / JUMP_COST_PER_DIST);
-                        let cost = (dist * JUMP_COST_PER_DIST).ceil() as i32;
-                        spirit.energy -= cost;
-                        spirit.pos = spirit.pos.towards(*target, dist);
-                    }
-                    _ => (),
+                if let Command::Jump { index, target } = command {
+                    // TODO: exclude star/base positions from jump
+                    let spirit_copy = &spirits[*index];
+                    let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
+                    let dist = spirit
+                        .pos
+                        .dist(*target)
+                        .min(spirit.energy as f32 / JUMP_COST_PER_DIST);
+                    let cost = (dist * JUMP_COST_PER_DIST).ceil() as i32;
+                    spirit.energy -= cost;
+                    spirit.pos = spirit.pos.towards(*target, dist);
                 }
             }
         }
@@ -555,7 +526,7 @@ impl Headless {
         }
         for i in 0..self.players.len() {
             let pos = self.players[i].base.pos;
-            let owner = self.players[i].base.player_id;
+            let _owner = self.players[i].base.player_id;
             let disrupted = self
                 .players
                 .iter()
@@ -647,7 +618,7 @@ impl From<SimulationResult> for ExternResult {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn headless_simulate(
+unsafe extern "C" fn headless_simulate(
     f1: TickFn,
     s1: usize,
     f2: TickFn,
@@ -676,7 +647,7 @@ pub unsafe extern "C" fn headless_simulate(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn headless_init(
+unsafe extern "C" fn headless_init(
     f1: TickFn,
     s1: u32,
     f2: TickFn,
@@ -707,21 +678,21 @@ pub unsafe extern "C" fn headless_init(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn headless_update_env(ptr: *mut Headless) {
+unsafe extern "C" fn headless_update_env(ptr: *mut Headless) {
     let mut headless = Box::from_raw(ptr);
     headless.update_env();
     mem::forget(headless);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn headless_gather_commands(ptr: *mut Headless, player_index: u32) {
+unsafe extern "C" fn headless_gather_commands(ptr: *mut Headless, player_index: u32) {
     let mut headless = Box::from_raw(ptr);
     headless.gather_commands(player_index as usize);
     mem::forget(headless);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> ExternResult {
+unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> ExternResult {
     let mut headless = Box::from_raw(ptr);
 
     let tick = headless.tick;
@@ -741,6 +712,6 @@ pub unsafe extern "C" fn headless_process_commands(ptr: *mut Headless) -> Extern
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn headless_free(ptr: *mut Headless) {
+unsafe extern "C" fn headless_free(ptr: *mut Headless) {
     let _headless = Box::from_raw(ptr);
 }

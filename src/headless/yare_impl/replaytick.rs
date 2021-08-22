@@ -2,7 +2,7 @@ use std::convert::From;
 
 use serde::{Deserialize, Serialize};
 
-use crate::yare_impl::*;
+use super::{base::Base, outpost::Outpost, spirit::Spirit, vec2::Vec2};
 
 // x,y
 #[derive(Serialize, Deserialize, Debug)]
@@ -59,7 +59,7 @@ impl ReplayEnergize {
         )
     }
 
-    pub fn spirit_to_outpost(a: &Spirit, b: &Outpost) -> ReplayEnergize {
+    pub fn spirit_to_outpost(a: &Spirit, _b: &Outpost) -> ReplayEnergize {
         ReplayEnergize(
             spirit_name(a),
             "outpost_mdo".to_string(),
@@ -67,7 +67,7 @@ impl ReplayEnergize {
         )
     }
 
-    pub fn outpost_to_spirit(b: &Outpost, a: &Spirit) -> ReplayEnergize {
+    pub fn outpost_to_spirit(_b: &Outpost, a: &Spirit) -> ReplayEnergize {
         ReplayEnergize(
             "outpost_mdo".to_string(),
             spirit_name(a),

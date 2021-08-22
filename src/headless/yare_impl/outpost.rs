@@ -1,12 +1,10 @@
-use crate::{
-    bindings::outpost::{
-        NORMAL_ATTACK,
-        NORMAL_RANGE,
-        UPGRADE_ATTACK,
-        UPGRADE_ENERGY,
-        UPGRADE_RANGE,
-    },
-    yare_impl::Pos,
+use super::vec2::Vec2;
+use crate::bindings::outpost::{
+    NORMAL_ATTACK,
+    NORMAL_RANGE,
+    UPGRADE_ATTACK,
+    UPGRADE_ENERGY,
+    UPGRADE_RANGE,
 };
 
 #[derive(Clone, Debug)]
@@ -14,7 +12,7 @@ pub(crate) struct Outpost {
     pub energy_cap: i32,
     pub energy: i32,
     pub player_id: usize,
-    pub pos: Pos,
+    pub pos: Vec2,
 }
 
 impl Outpost {
@@ -23,7 +21,7 @@ impl Outpost {
             energy_cap: 1000,
             energy: 0,
             player_id: usize::MAX,
-            pos: Pos { x: 2200., y: 1100. },
+            pos: Vec2 { x: 2200., y: 1100. },
         }]
     }
 

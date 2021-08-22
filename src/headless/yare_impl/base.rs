@@ -1,7 +1,5 @@
-use crate::{
-    bindings::base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE},
-    yare_impl::{Pos, Shape},
-};
+use super::{shape::Shape, vec2::Vec2};
+use crate::bindings::base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE};
 
 #[derive(Clone, Debug)]
 pub(crate) struct Base {
@@ -9,7 +7,7 @@ pub(crate) struct Base {
     pub energy: i32,
     pub hp: u32,
     pub player_id: usize,
-    pub pos: Pos,
+    pub pos: Vec2,
     pub spirit_cost: i32,
     pub disrupted: bool,
 }
@@ -35,11 +33,11 @@ impl Base {
         }
     }
 
-    pub fn base_pos(player_id: usize) -> Pos {
+    pub fn base_pos(player_id: usize) -> Vec2 {
         if player_id == 0 {
-            Pos { x: 1600., y: 700. }
+            Vec2 { x: 1600., y: 700. }
         } else {
-            Pos { x: 2600., y: 1700. }
+            Vec2 { x: 2600., y: 1700. }
         }
     }
 }

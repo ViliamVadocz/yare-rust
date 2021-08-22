@@ -34,13 +34,12 @@ impl Shape {
             Shape::Square => SPIRIT_COSTS_SQUARE,
             Shape::Triangle => SPIRIT_COSTS_TRIANGLE,
         };
-        let mut cost = costs[0].1;
-        for i in 1..costs.len() {
-            if current_count >= costs[i].0 as usize {
-                cost = costs[i].1;
-            }
-        }
-        cost
+        costs
+            .iter()
+            .filter(|(threshold, _cost)| current_count >= *threshold as usize)
+            .max_by_key(|(threshold, _cost)| threshold)
+            .map(|(_threshold, cost)| *cost)
+            .unwrap_or_default()
     }
 
     pub fn base_size(&self) -> i32 {

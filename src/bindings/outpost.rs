@@ -1,3 +1,4 @@
+#[cfg(not(feature = "headless"))]
 use crate::bindings::position::Position;
 
 /// Energy needed for the outpost to "upgrade".
@@ -12,6 +13,7 @@ pub const NORMAL_ATTACK: i32 = 1;
 /// Energy used for attacks while the outpost has at least `UPGRADE_ENERGY`.
 pub const UPGRADE_ATTACK: i32 = 4;
 
+#[cfg(not(feature = "headless"))]
 #[link(wasm_import_module = "outposts")]
 extern "C" {
     /// Get the number of outposts in the game.

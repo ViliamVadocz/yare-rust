@@ -8,12 +8,10 @@ use std::{
 use crate::bindings::position::Position;
 
 #[derive(Clone, Copy, Debug)]
-pub struct Vec2 {
+pub(crate) struct Vec2 {
     pub x: f32,
     pub y: f32,
 }
-
-pub type Pos = Vec2;
 
 impl From<&Position> for Vec2 {
     fn from(pos: &Position) -> Vec2 {
@@ -27,6 +25,7 @@ impl From<Position> for Vec2 {
     }
 }
 
+#[allow(dead_code)]
 impl Vec2 {
     pub fn dot(self, other: Vec2) -> f32 {
         (self.x * other.x) + (self.y * other.y)

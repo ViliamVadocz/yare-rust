@@ -8,12 +8,8 @@ mod spirit;
 mod star;
 mod vec2;
 
-pub use base::*;
-pub use command::*;
-pub use headless::*;
-pub use outpost::*;
-pub use replaytick::*;
-pub use shape::*;
-pub use spirit::*;
-pub use star::*;
-pub use vec2::*;
+pub(crate) use command::Command;
+pub use headless::{Headless, Outcome, SimulationResult};
+pub(crate) use headless::{BASES, COMMANDS, ME, OUTPOSTS, PLAYER_NUM, SPIRITS, STARS};
+pub use shape::Shape;
+pub(crate) use vec2::Vec2;
