@@ -32,7 +32,7 @@ Put this in your `Cargo.toml`.
 crate-type = ["cdylib"]
 
 [dependencies]
-yareio = "0.1.1"
+yareio = "0.1"
 
 [profile.release]
 opt-level = "s"
@@ -143,3 +143,52 @@ node wasm2yareio target/wasm32-unknown-unknown/release/my-yare-bot.wasm
 
 It is also recommended that you install the tampermonkey script to automatically upload your code to yare.io:
 [Click to install](https://raw.githubusercontent.com/L0laapk3/yare.io-wasm/master/codeUpdate.user.js).
+
+## Headless
+
+This library comes with a headless implementation of the game by dbenson24.
+It is not complete, but it is useful for regression tests or possibly machine
+learning.
+
+To use it, you will need to enable the `"headless"` feature. You will most likely
+run want to do this when testing. The command might look like this:
+
+```bash
+cargo test --features yareio/headless --release
+```
+
+The test should look something like this:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use std::rc::Rc;
+    use yareio::{Headless, Outcome, SimulationResult, Shape};
+
+    #[test]
+    fn win_against_rush() {
+        let headless = Headless::init(&[Rc::new(my_bot_func), Rc::new(rush)], &[Shape::Circle, Shape::Square], None);
+        let SimulationResult(_tick, outcome) = headless.simulate();
+        assert!(matches!(outcome, Outcome::Victory(0)));
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::rc::Rc;
+
+    use yareio::yare_impl::{Headless, SimulationResult, Outcome, Shape};
+
+    fn bot(_tick: u32) {}
+
+    #[test]
+    fn simple() {
+        let rc = Rc::new(bot);
+        let SimulationResult(_tick, outcome) = Headless::init(&[rc.clone(), rc], &[Shape::Circle, Shape::Square], None).simulate();
+        assert!(matches!(outcome, Outcome::Draw));
+    }
+}
+
+```
+
+Furthermore, there are undocumented ffi bindings to run the headless simulation from other languages.
