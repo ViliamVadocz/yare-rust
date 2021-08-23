@@ -163,7 +163,7 @@ The test should look something like this:
 #[cfg(test)]
 mod tests {
     use std::rc::Rc;
-    use yareio::{Headless, Outcome, SimulationResult, Shape};
+    use yareio::yare_impl::{Headless, Outcome, SimulationResult, Shape};
 
     #[test]
     fn win_against_rush() {
@@ -172,23 +172,6 @@ mod tests {
         assert!(matches!(outcome, Outcome::Victory(0)));
     }
 }
-
-#[cfg(test)]
-mod test {
-    use std::rc::Rc;
-
-    use yareio::yare_impl::{Headless, SimulationResult, Outcome, Shape};
-
-    fn bot(_tick: u32) {}
-
-    #[test]
-    fn simple() {
-        let rc = Rc::new(bot);
-        let SimulationResult(_tick, outcome) = Headless::init(&[rc.clone(), rc], &[Shape::Circle, Shape::Square], None).simulate();
-        assert!(matches!(outcome, Outcome::Draw));
-    }
-}
-
 ```
 
 Furthermore, there are undocumented ffi bindings to run the headless simulation from other languages.
