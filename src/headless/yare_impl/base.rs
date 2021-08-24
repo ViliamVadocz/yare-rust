@@ -21,7 +21,7 @@ impl Base {
                 Shape::Triangle => 600,
             },
             energy: 0,
-            hp: 1,
+            hp: 5,
             player_id,
             pos: Base::base_pos(player_id),
             spirit_cost: match shape {
