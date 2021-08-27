@@ -167,11 +167,16 @@ mod tests {
 
     #[test]
     fn win_against_rush() {
-        let headless = Headless::init(&[Rc::new(my_bot_func), Rc::new(rush)], &[Shape::Circle, Shape::Square], None);
+        let bots: &[Rc<dyn Fn(u32)>] = &[Rc::new(my_bot_func), Rc::new(rush)];
+        let shapes = &[Shape::Circle, Shape::Square];
+        let headless = Headless::init(bots, shapes, None);
         let SimulationResult(_tick, outcome) = headless.simulate();
         assert!(matches!(outcome, Outcome::Victory(0)));
     }
 }
 ```
+
+Make sure your bots are thread-safe if you run multiple tests.
+If you play against yourself, make sure you do not write to the same mutable statics.
 
 Furthermore, there are undocumented ffi bindings to run the headless simulation from other languages.
