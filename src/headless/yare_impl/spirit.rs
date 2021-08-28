@@ -23,7 +23,7 @@ impl Spirit {
             energy_cap: size * 10,
             energy: size * 10,
             hp: 1,
-            id, // TODO get id of last created spirit
+            id,
             player_id,
             pos,
             shape,
