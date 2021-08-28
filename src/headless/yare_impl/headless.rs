@@ -603,7 +603,11 @@ impl Headless {
     }
 
     pub fn write_replay(&self) {
-        if let Some(path) = &self.replay_path {
+        self.write_replay_to_file(&self.replay_path)
+    }
+
+    pub fn write_replay_to_file(&self, replay_path: &Option<String>) {
+        if let Some(path) = replay_path {
             let replay = serde_json::to_string(&self.replay).unwrap();
             let mut file = File::create(path).unwrap();
             file.write_all(replay.as_bytes()).unwrap();
