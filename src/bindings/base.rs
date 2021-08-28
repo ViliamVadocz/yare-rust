@@ -4,12 +4,11 @@ use crate::bindings::position::Position;
 /// it will not produce new spirits.
 pub const DISRUPTION_RADIUS: f32 = 400.;
 /// (Threshold, energy cost) pairs for circle spirit production.
-pub const SPIRIT_COSTS_CIRCLE: &[(u32, i32)] =
-    &[(0, 25), (50, 50), (100, 100), (200, 200), (300, 400)];
+pub const SPIRIT_COSTS_CIRCLE: &[(u32, i32)] = &[(0, 25), (50, 50), (100, 90), (200, 150)];
 /// (Threshold, energy cost) pairs for square spirit production.
-pub const SPIRIT_COSTS_SQUARE: &[(u32, i32)] = &[(0, 360), (10, 700)];
+pub const SPIRIT_COSTS_SQUARE: &[(u32, i32)] = &[(0, 360), (10, 500), (16, 700)];
 /// (Threshold, energy cost) pairs for triangle spirit production.
-pub const SPIRIT_COSTS_TRIANGLE: &[(u32, i32)] = &[(0, 90), (30, 120), (120, 300)];
+pub const SPIRIT_COSTS_TRIANGLE: &[(u32, i32)] = &[(0, 90), (30, 160), (120, 300)];
 /// Spirit production position offset from base.
 /// Index of offset corresponds to player index.
 pub const PRODUCTION_OFFSET: [Position; 2] =
@@ -103,33 +102,7 @@ extern "C" {
     /// be generated and that much energy will be used up. The cost of a new
     /// spirit increases with the number of your spirits in the game.
     ///
-    /// ### Circles
-    /// ```
-    /// | threshold | energy |
-    /// |-----------|--------|
-    /// | 0         | 25     |
-    /// | 50        | 50     |
-    /// | 100       | 100    |
-    /// | 200       | 200    |
-    /// | 300       | 400    |
-    /// ```
-    ///
-    /// ### Squares
-    /// ```
-    /// | threshold | energy |
-    /// |-----------|--------|
-    /// | 0         | 360    |
-    /// | 10        | 700    |
-    /// ```
-    ///
-    /// ### Triangles
-    /// ```
-    /// | threshold | energy |
-    /// |-----------|--------|
-    /// | 0         | 90     |
-    /// | 30        | 120    |
-    /// | 120       | 300    |
-    /// ```
+    /// See the `SPIRIT_COSTS` constants for each shape.
     #[link_name = "currentSpiritCost"]
     pub fn current_spirit_cost(index: usize) -> i32;
 
