@@ -1,5 +1,10 @@
 use super::{shape::Shape, vec2::Vec2};
-use crate::bindings::base::{SPIRIT_COSTS_CIRCLE, SPIRIT_COSTS_SQUARE, SPIRIT_COSTS_TRIANGLE};
+use crate::bindings::base::{
+    SPIRIT_COSTS_CIRCLE,
+    SPIRIT_COSTS_SQUARE,
+    SPIRIT_COSTS_TRIANGLE,
+    START_BASE_HP,
+};
 
 #[derive(Clone, Debug)]
 pub(crate) struct Base {
@@ -21,7 +26,7 @@ impl Base {
                 Shape::Triangle => 600,
             },
             energy: 0,
-            hp: 5,
+            hp: START_BASE_HP,
             player_id,
             pos: Base::base_pos(player_id),
             spirit_cost: match shape {
