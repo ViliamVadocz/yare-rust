@@ -593,7 +593,7 @@ impl Headless {
         self.process_commands()
     }
 
-    pub fn simulate(mut self) -> SimulationResult {
+    pub fn simulate(&mut self) -> SimulationResult {
         loop {
             if let Some(outcome) = self.tick() {
                 self.write_replay();
@@ -603,15 +603,15 @@ impl Headless {
     }
 
     pub fn write_replay(&self) {
-        self.write_replay_to_file(&self.replay_path)
+        if let Some(path) = &self.replay_path {
+            self.write_replay_to_file(path)
+        }
     }
 
-    pub fn write_replay_to_file(&self, replay_path: &Option<String>) {
-        if let Some(path) = replay_path {
-            let replay = serde_json::to_string(&self.replay).unwrap();
-            let mut file = File::create(path).unwrap();
-            file.write_all(replay.as_bytes()).unwrap();
-        }
+    pub fn write_replay_to_file(&self, path: &str) {
+        let replay = serde_json::to_string(&self.replay).unwrap();
+        let mut file = File::create(path).unwrap();
+        file.write_all(replay.as_bytes()).unwrap();
     }
 }
 
@@ -658,7 +658,7 @@ unsafe extern "C" fn headless_simulate(
         Some(str_slice.to_owned())
     };
 
-    let headless = Headless::init(&bots, &[s1.into(), s2.into()], file_path);
+    let mut headless = Headless::init(&bots, &[s1.into(), s2.into()], file_path);
     let result = headless.simulate();
     result.into()
 }
