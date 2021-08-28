@@ -418,11 +418,16 @@ impl Headless {
 
             for command in player_commands.iter() {
                 if let Command::Goto { index, target } = command {
-                    // TODO: orbit stars/bases/outposts
-                    let spirit_copy = &spirits[*index];
-                    let spirit = &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
-                    let dist = spirit.pos.dist(*target).min(MOVEMENT_SPEED);
-                    spirit.pos = spirit.pos.towards(*target, dist);
+                    if !target.is_nan() {
+                        // TODO: orbit stars/bases/outposts
+                        let spirit_copy = &spirits[*index];
+                        if spirit_copy.player_id == player_i {
+                            let spirit =
+                                &mut self.players[spirit_copy.player_id].spirits[spirit_copy.id];
+                            let dist = spirit.pos.dist(*target).min(MOVEMENT_SPEED);
+                            spirit.pos = spirit.pos.towards(*target, dist);
+                        }
+                    }
                 }
             }
         }
@@ -565,7 +570,14 @@ impl Headless {
         }
 
         self.tick += 1;
-        if self.tick > MAX_GAME_LEN {
+        if self.tick > MAX_GAME_LEN
+            || self
+                .players
+                .iter()
+                .map(|p| p.spirits.iter().filter(|s| s.hp > 0).count())
+                .sum::<usize>()
+                == 0
+        {
             return Some(Outcome::Draw);
         }
 

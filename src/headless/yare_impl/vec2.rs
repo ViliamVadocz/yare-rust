@@ -86,6 +86,10 @@ impl Vec2 {
             y: self.x,
         }
     }
+
+    pub fn is_nan(self) -> bool {
+        self.x.is_nan() || self.y.is_nan()
+    }
 }
 
 impl Default for Vec2 {
