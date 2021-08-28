@@ -37,6 +37,12 @@ pub unsafe fn energize_outpost(index: usize, outpost_index: usize) {
         target: outpost_index,
     });
 }
+pub unsafe fn energize_star(index: usize, star_index: usize) {
+    push_static!(COMMANDS, Command::EnergizeStar {
+        index,
+        target: star_index,
+    })
+}
 pub unsafe fn energize(index: usize, spirit_index: usize) {
     push_static!(COMMANDS, Command::Energize {
         index,

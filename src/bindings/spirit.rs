@@ -50,6 +50,11 @@ extern "C" {
     #[link_name = "energizeOutpost"]
     pub fn energize_outpost(index: usize, outpost_index: usize);
 
+    /// Transfer energy to a star.
+    /// Maximum distance for energy transfer is 200 units.
+    #[link_name = "energizeStar"]
+    pub fn energize_star(index: usize, star_index: usize);
+
     /// Transfer energy to another spirit* equal to the spirit's size.
     /// Maximum distance for energy transfer is 200 units.
     ///

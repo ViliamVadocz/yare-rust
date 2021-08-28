@@ -301,6 +301,7 @@ impl Headless {
                                 2 * source_spirit.energize_amount();
                         }
                     }
+                    // TODO Energize star.
                     Command::Explode { index } => {
                         let source_spirit = &spirits[*index];
                         if source_spirit.hp < 1

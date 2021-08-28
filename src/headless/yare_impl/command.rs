@@ -6,6 +6,7 @@ pub(crate) enum Command {
     Energize { index: usize, target: usize },
     EnergizeBase { index: usize, target: usize },
     EnergizeOutpost { index: usize, target: usize },
+    EnergizeStar { index: usize, target: usize },
     Jump { index: usize, target: Vec2 },
     Merge { index: usize, target: usize },
     Divide { index: usize },
