@@ -3,10 +3,10 @@ use std::cmp::max;
 #[cfg(not(feature = "headless"))]
 use crate::bindings::position::Position;
 
-/// Each tick a star generates 3 + 1% of its current energy,
+/// Each tick a star generates 2 + 2% of its current energy,
 /// rounded to the nearest integer.
 pub fn next_energy(energy: i32) -> i32 {
-    ((max(energy, 0) + 3) as f32 * 1.01).round() as i32
+    ((max(energy, 0) + 2) as f32 * 1.02).round() as i32
 }
 
 #[cfg(not(feature = "headless"))]
