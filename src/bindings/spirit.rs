@@ -143,7 +143,7 @@ extern "C" {
     pub fn shout(index: usize, string: *const c_char);
 
     /// Get the shape of the spirit.
-    /// This is 0 for circles, 1 for squares.
+    /// This is 0 for circles, 1 for squares, 2 for triangles.
     pub fn shape(index: usize) -> usize;
 
     /// Get the size of the spirit.
