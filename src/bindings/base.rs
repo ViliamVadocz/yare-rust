@@ -14,7 +14,7 @@ pub const SPIRIT_COSTS_TRIANGLE: &[(u32, i32)] = &[(0, 90), (30, 160), (120, 300
 pub const PRODUCTION_OFFSET: [Position; 2] =
     [Position { x: -20., y: -60. }, Position { x: 20., y: 60. }];
 /// The hp the bases star with.
-pub const START_BASE_HP: u32 = 5;
+pub const START_BASE_HP: u32 = 8;
 
 /// Spirit start offset from base for circles.
 pub const CIRCLE_START_OFFSET: [&[Position]; 2] = [
